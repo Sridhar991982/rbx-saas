@@ -1,0 +1,5 @@
+rbx.db
+rbx/static/admin
+*.pyc
+~*
+*.swp
