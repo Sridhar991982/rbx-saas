@@ -1,0 +1,104 @@
+{% load staticfiles %}
+{% load gravatar %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}Run in the Box{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/rbx.min.css" %}" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="fluid-icon" href="{% static "fluidicon.png" %}" title="Run in the Box" />
+    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="{% static "apple-touch-icon-144.png" %}" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{% static "apple-touch-icon-144.png" %}" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{% static "apple-touch-icon-144.png" %}" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{% static "apple-touch-icon-144.png" %}" />
+    <meta name="msapplication-TileImage" content="{% static "windows-tile.png" %}">
+    <meta name="msapplication-TileColor" content="#1e9657">
+    <link rel="icon" type="image/x-icon" href="{% static "favicon.ico" %}" />
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-static-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a id="rbx" class="brand" href="#">Run <span class="small">in
+          the</span> <span class="box">Box</span></a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+            {% if user.is_authenticated %}
+              <li class="divider-vertical"></li>
+              <li>
+                <form action="#" class="input-append navbar-search">
+                    <input class="span3" id="search" type="text"
+                            placeholder="Search run in the box" />
+                    <button class="btn" type="submit">
+                      <i class="icon-search"><span class="hide">Go!</span></i>
+                    </button>
+                </form>
+              </li>
+              <li class="divider-vertical"></li>
+              <li><a href="#">Explore</a></li>
+              <li><a href="#">Help</a></li>
+            </ul>
+            <ul class="nav pull-right">
+              <li><a href="#">{% gravatar user.email 20 %} {{ user.username }}</a></li>
+              <li><a href="#" rel="tooltip" title="Create a new project">
+                <i class="icon-briefcase icon-large"><span class="hide">New project</span></i>
+              </a></li>
+              <li><a href="#" rel="tooltip" title="Account settings">
+                <i class="icon-wrench icon-large"><span class="hide">Settings</span></i>
+              </a></li>
+              <li><a href="#" rel="tooltip" title="Sign&nbsp;out">
+                <i class="icon-signout icon-large"><span class="hide">Sign out</span></i>
+              </a></li>
+            {% else %}
+              <li><a href="#">Explore</a></li>
+              <li><a href="#">Search</a></li>
+              <li><a href="#">Features</a></li>
+            {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% block content %}
+    <p>Oops, something wrong happened...</p>
+    {% endblock %}
+
+    <div class="container">
+      <hr>
+      <footer>
+        <p class="pull-right">&copy; 2013 Run in the Box. All rights reserved</p>
+        <ul id="legal">
+            <li><a href="/site/terms">Terms of Service</a></li>
+            <li><a href="/site/privacy">Privacy</a></li>
+        </ul>
+      </footer>
+    </div>
+    <script src="{% static "js/jquery-1.8.3.min.js" %}"></script>
+    <script src="{% static "js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/rbx.js" %}"></script>
+
+  </body>
+</html>
+

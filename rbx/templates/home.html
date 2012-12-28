@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="billboard">
+      <div class="container">
+        <div class="row-fluid">
+          <div class="{% if user.is_authenticated %}offset2{% endif %} span8 hero-unit">
+            <h1>Build, test, share, anywhere</h1>
+            <p>Powerful cloud based environment to build, execute and test
+            application for open source and private projects.</p>
+          </div>
+        {% if not user.is_authenticated %}
+          <div class="span4 well">
+            <form action="#" method="post" class="signup">
+              {% csrf_token %}
+              {{ signup_form.as_p }}
+              <input type="submit" class="btn btn-primary btn-large btn-block" value="Sign up for free" />
+              <p class="small center"><a href="#">See plans and pricing</a></p>
+            </form>
+          </div>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="container center">
+      <div class="row">
+        <div class="span4 text-cent">
+          <p class="icon big"><i class="icon-cogs icon-large"></i></p>
+          <h2>Setup execution environment</h2>
+          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+        </div>
+        <div class="span4 text-cent">
+          <p class="icon big"><i class="icon-wrench icon-large"></i></p>
+          <h2>Define application parameters</h2>
+          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+        </div>
+        <div class="span4 text-cent">
+          <p class="icon big"><i class="icon-tasks icon-large"></i></p>
+          <h2>Browse execution output</h2>
+          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+        </div>
+      </div>
+    </div>
+{% endblock %}
