@@ -2,6 +2,7 @@ from django.conf.urls.defaults import patterns, url, include
 
 settings_urls = patterns('rbx.views',
     url(r'^profile$', 'home', name='settings_profile'),
+    url(r'^create-team$', 'home', name='settings_create_team'),
 )
 
 urlpatterns = patterns('rbx.views',
@@ -15,8 +16,9 @@ urlpatterns = patterns('rbx.views',
     url(r'^search$', 'home', name='search'),
     url(r'^explore$', 'home', name='explore'),
     url(r'^help$', 'home', name='help'),
-    url(r'^new$', 'home', name='new_project'),
+    url(r'^new$', 'new_project', name='new_project'),
     url(r'^features$', 'home', name='features'),
     url(r'^settings/', include(settings_urls)),
     url(r'^(?P<username>\w+)$', 'profile', name='profile'),
+    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)$', 'project', name='project'),
 )

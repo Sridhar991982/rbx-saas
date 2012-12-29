@@ -101,5 +101,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django_gravatar',
+    'crispy_forms',
     'rbx',
 )

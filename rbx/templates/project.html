@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load gravatar %}
+{% load crispy_forms_tags %}
+{% load url from future %}
+
+{% block title %}{{ project.name }} &mdash; Run in the Box{% endblock %}
+
+{% block content %}
+<div class="billboard">
+  <div class="container">
+    <h1>
+      <i class="icon-{% if project.public %}un{% endif %}lock"></i>
+      {{ project.name }}
+    </h1>
+    <p><i class="icon-user"></i> {{ project.owner }}</p>
+  </div>
+</div>
+<div class="container center">
+Project content
+</div>
+{% endblock %}

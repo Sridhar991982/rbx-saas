@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load gravatar %}
+{% load crispy_forms_tags %}
+{% load url from future %}
+
+{% block title %}Create a new project &mdash; Run in the Box{% endblock %}
+
+{% block content %}
+<div class="billboard">
+  <div class="container">
+    <h1>Create a new project</h1>
+    {% if error_occured %}
+    {% include "alert-error.html" %}
+    {% endif %}
+    {% crispy create_project_form %}
+  </div>
+</div>
+<div class="container center">
+  <div class="row-fluid">
+    <div class="span6">
+      <p class="icon big"><i class="icon-question-sign icon-large"></i></p>
+      <h2>New to Run in the Box?</h2>
+      <p>
+        Learn the basis of Run in the Box and how it works by exploring the <a
+        href="{% url "help" %}">help section</a>.
+      <p>
+    </div>
+    <div class="span6">
+      <p class="icon big"><i class="icon-group icon-large"></i></p>
+      <h2>Working in team?</h2>
+      <p>
+        Create a <a href="{% url "settings_create_team" %}">team account</a> to
+        consolidate your projects and organize your team's work.
+      <p>
+    </div>
+  </div>
+</div>
+{% endblock %}

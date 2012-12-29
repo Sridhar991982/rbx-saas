@@ -60,6 +60,18 @@ footer {
           border-radius: 3px;
 }
 
+h1 {
+  margin-bottom: 1em;
+}
+
+.hero-unit h1 {
+  margin-bottom: 0.5em;
+}
+
+.asteriskField {
+  display: none;
+}
+
 .small {
   font-size: 0.80em;
 }
