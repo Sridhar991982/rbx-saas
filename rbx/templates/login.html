@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load url from future %}
 
 {% block title %}Sign in &mdash; Run in the Box{% endblock %}
 
@@ -14,7 +15,7 @@
         {% endif %}
 
         <h1>Sign in</h1>
-        <form method="post" action="{% url login %}" class="well" autocomplete="off">
+        <form method="post" action="{% url "login" %}" class="well" autocomplete="off">
           {% csrf_token %}
           <p>
             <label for="id_username">{{ form.username.label }}</label>
