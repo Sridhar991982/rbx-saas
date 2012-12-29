@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Sign up &mdash; Run in the Box{% endblock %}
+
+{% block content %}
+  <div class="container space-top">
+    <h1>Sign up for Run in the Box</h1>
+    <div class="row-fluid">
+      <div class="span6">
+        <form method="post" action="{% url signup %}" class="well" autocomplete="off">
+          {% csrf_token %}
+        </form>
+      </div>
+      <div class="span6">
+        <p class="space-top center">
+          <img src="{% static "img/collaboration.png" %}" alt="" class="img-polaroid" />
+        </p>
+        <p>
+          You are signing up for the <strong>free</strong> plan.<br />
+          The cost for this plan is <strong>$0 per month</strong>. You can cancel or upgrade at any time.
+        </p>
+        <p>
+          To collaborate on private project, check out our <a href="{% url plans
+          %}">paid individual and organization plans</a>.
+        </p>
+        <p>
+          Want Run in the Box on your private network? Learn more about <a
+          href="#">Run in the Box appliance</a>.
+        <p>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
