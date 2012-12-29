@@ -68,6 +68,10 @@ footer {
   font-size: 3em;
 }
 
+.space-top {
+  margin-top: 1em;
+}
+
 .icon {
   margin-top: 1em;
 }

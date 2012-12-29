@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from forms import HomeSignupForm
 
 
@@ -12,5 +13,14 @@ def home(request):
     })
 
 
+@login_required
 def dashboard(request):
+    return home(request)
+
+
+def signup(request, from_home=False):
+    return render(request, 'signup.html')
+
+
+def profile(request, username):
     return home(request)

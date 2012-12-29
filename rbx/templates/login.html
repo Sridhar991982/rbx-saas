@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in &mdash; Run in the Box{% endblock %}
+
+{% block content %}
+  <div class="container space-top">
+    <div class="row-fluid">
+      <div class="offset4 span4">
+        {% if form.errors %}
+        <div class="alert alert-error">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <p>Your username and password didn't match. Please try again.</p>
+        </div>
+        {% endif %}
+
+        <h1>Sign in</h1>
+        <form method="post" action="{% url login %}" class="well" autocomplete="off">
+          {% csrf_token %}
+          <p>
+            <label for="id_username">{{ form.username.label }}</label>
+            <input id="id_username" type="text"
+                   name="{{ form.username.name }}" maxlength="30" class="input-block-level"
+                   autocapitalize="off" autofocus="autofocus"
+                   tabindex="1" />
+          </p>
+          <p>
+            <label for="id_password">{{ form.password.label }} (<a
+            href="#">Forgot password</a>)</label>
+            <input type="password" name="{{ form.password.name }}"
+                   id="id_password" class="input-block-level"
+                   autocapitalize="off" autofocus="autofocus"
+                   tabindex="2" />
+          </p>
+          <input class="btn" type="submit" value="Sign in" />
+          <input type="hidden" name="next" value="{{ next }}" />
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
