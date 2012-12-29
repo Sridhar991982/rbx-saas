@@ -61,7 +61,7 @@
               <li><a href="{% url "help" %}">Help</a></li>
             </ul>
             <ul class="nav pull-right">
-              <li><a href="{% url "profile" user.username %}">{% gravatar user.email 20 %} {{ user.username }}</a></li>
+              <li><a href="{% url "profile" user.username %}">{% gravatar user.email 20 %} {{ user }}</a></li>
               <li><a href="{% url "new_project" %}" rel="tooltip" title="Create a new project">
                 <i class="icon-briefcase icon-large"><span class="hide">New project</span></i>
               </a></li>
@@ -93,7 +93,7 @@
     <div class="container">
       <hr>
       <footer>
-        <p class="pull-right">&copy; 2013 Run in the Box. All rights reserved</p>
+        <p class="pull-right">&copy; {% now "Y" %} Run in the Box. All rights reserved</p>
         <ul id="legal">
             <li><a href="{% url "terms" %}">Terms of Service</a></li>
             <li><a href="{% url "privacy" %}">Privacy</a></li>
