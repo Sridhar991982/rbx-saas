@@ -36,6 +36,9 @@ BUILD_STATUS = (
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
 
+    def __unicode__(self):
+        return self.user.get_full_name() or self.user.username
+
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -55,6 +58,9 @@ class Project(models.Model):
 
     def __unicode__(self):
         return '%s project' % self.name
+
+    class Meta:
+        unique_together = ('owner', 'slug')
 
 
 class ProjectRight(models.Model):
