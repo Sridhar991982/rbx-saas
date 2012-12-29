@@ -11,11 +11,12 @@
           </div>
         {% if not user.is_authenticated %}
           <div class="span4 well">
-            <form action="#" method="post" class="signup">
+            <form action="{% url signup %}" method="post" class="signup">
               {% csrf_token %}
               {{ signup_form.as_p }}
+              <input type="hidden" name="source" value="home"/>
               <input type="submit" class="btn btn-primary btn-large btn-block" value="Sign up for free" />
-              <p class="small center"><a href="#">See plans and pricing</a></p>
+              <p class="small center"><a href="{% url plans %}">See plans and pricing</a></p>
             </form>
           </div>
         {% endif %}
