@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load gravatar %}
+{% load url from future %}
+
+{% block content %}
+<div class="container space-top">
+  <div class="row-fluid">
+    <div class="span8">
+      <h1>News feed</h1>
+
+      {{ stream }}
+    </div>
+    <div class="span4">
+      <h1>Projects</h1>
+    </div>
+  </div>
+</div>
+{% endblock %}

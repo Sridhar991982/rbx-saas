@@ -85,6 +85,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
+ACTSTREAM_SETTINGS = {
+    'MODELS': ('rbx.UserProfile', 'rbx.Project', 'rbx.Executor'),
+    'FETCH_RELATIONS': True,
+    'USE_PREFETCH': True,
+}
+
 ROOT_URLCONF = 'urls'
 
 AUTH_PROFILE_MODULE = 'rbx.UserProfile'
@@ -103,4 +109,5 @@ INSTALLED_APPS = (
     'django_gravatar',
     'crispy_forms',
     'rbx',
+    'actstream',
 )
