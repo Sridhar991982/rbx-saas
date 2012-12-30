@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% load url from future %}
 
-{% block title %}{{ project.name }} &mdash; Run in the Box{% endblock %}
+{% block title %}{% title project.name %}{% endblock %}
 
 {% block content %}
 <div class="billboard">
