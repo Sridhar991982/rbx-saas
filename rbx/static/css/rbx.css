@@ -84,6 +84,14 @@ h1 {
   margin-top: 1em;
 }
 
+.space-left {
+  margin-left: 0.5em;
+}
+
+.collapse-bottom {
+  margin-bottom: 0.4em;
+}
+
 .icon {
   margin-top: 1em;
 }
@@ -104,4 +112,60 @@ form.signup input {
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
+}
+
+ul.stats li {
+  margin-bottom: 0.5em;
+}
+
+ul.stats strong {
+  font-size: 1.3em;
+}
+
+.gray {
+  color: #555555;
+}
+
+.projects li {
+  padding: 0.4em;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.projects li:hover {
+  background: #eeeeee;
+}
+
+.projects li a {
+  font-size: 1.1em;
+  font-weight: 400;
+}
+
+.icon-small:before {
+  font-size: 0.6666666666666666em;
+  vertical-align: middle;
+}
+
+a.undecorated:hover {
+  text-decoration: none;
+}
+
+.stream {
+  padding: 0.6em;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.stream a {
+  font-weight: 400;
+}
+
+.stream .span1 {
+  font-size: 2em;
+  line-height: 1.3em;
+  color: #e5e5e5;
+  text-align: right;
+}
+
+.stream small {
+  display: block;
+  line-height: 1em;
 }

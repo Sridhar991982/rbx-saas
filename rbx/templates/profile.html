@@ -2,19 +2,114 @@
 {% load gravatar %}
 {% load url from future %}
 
+{% block title %}{% title profile %}{% endblock %}
+
 {% block content %}
+<div class="billboard">
+  <div class="container">
+    <div class="row-fluid">
+      <div class="span2">
+        <img src="{% gravatar_url profile.gravatar 170 %}" alt="{{ profile }}'s picture" class="img-polaroid"
+              width="170" height="170" />
+      </div>
+      <div class="span9">
+        <h1 class="collapse-bottom">{{ profile }}
+          {% if user == profile.user %}
+          <a href="{% url "settings_profile" %}" rel="tooltip" title="Edit your profile"
+          class="space-left undecorated">
+          <i class="icon-wrench icon-small"><span class="hide">Edit profile</span></i></a>
+          {% endif %}
+        </h1>
+        <div class="row-fluid">
+          <div class="span7">
+            <ul class="unstyled">
+              {% if profile.school  %}
+              <li><i class="icon-briefcase"></i> Studies at {{ profile.school }}</li>
+              {% endif %}
+              {% if profile.company  %}
+              <li><i class="icon-briefcase"></i> Works at {{ profile.school }}</li>
+              {% endif %}
+              {% if profile.location  %}
+              <li><i class="icon-map-marker"></i> Lives in {{ profile.location }}</li>
+              {% endif %}
+              {% if profile.website  %}
+              <li><i class="icon-globe"></i> <a href="{{ profile.website }}">{{ profile.website }}</a></li>
+              {% endif %}
+              {% if user.is_authenticated %}
+              <li><i class="icon-envelope"></i> <a href="mailto:{{ profile.user.email }}">
+              {{ profile.user.email }}</a></li>
+              {% endif %}
+              <li><i class="icon-time"></i> Joined on
+              {{ profile.user.date_joined|date:"N j, Y" }}</li>
+            </ul>
+          </div>
+          <div class="span5">
+            <ul class="stats unstyled">
+              <li>
+                <i class="icon-user"></i>
+                <strong>{{ profile.nb_followers }}</strong>
+                <span>follower{{ profile.nb_followers|pluralize }}</span>
+              </li>
+              <li>
+                <i class="icon-star"></i>
+                <strong>{{ profile.nb_starred }}</strong>
+                <span>starred</span>
+              </li>
+              <li>
+                <i class="icon-heart"></i>
+                <strong>{{ profile.nb_following }}</strong>
+                <span>following</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="container space-top">
   <div class="row-fluid">
-    <div class="span8">
-      <h1>News feed</h1>
-
-      {{ stream }}
+    <div class="span7">
+      <h2>Public activity</h2>
+      {% for action in stream %}
+      <div class="row-fluid stream">
+        <div class="span1">
+          {% if action.target_content_type.name == "project" %}
+          <i class="pull-left icon-plus-sign"></i>
+          {% endif %}
+        </div>
+        <div class="span11">
+          <a href="{% url "profile" action.actor.user %}">{{ action.actor }}</a>
+          {{ action.verb }}
+          {{ action.target_content_type.name }}
+          <a href="
+            {% if action.target_content_type.name == "project" %}
+            {% url "project" action.actor.user action.target.slug %}
+            {% endif %}
+          ">
+          {{ action.target.name }}
+          </a>
+          <small>{{ action.timesince }} ago</small>
+        </div>
+      </div>
+      {% endfor %}
     </div>
-    <div class="span4">
-      <h1>User</h1>
-      {{ user }}
+    <div class="span5">
+      <h2>Projects
+          {% if user == profile.user %}
+          <a href="{% url "new_project" %}" rel="tooltip" title="Create a new project"
+          class="space-left undecorated">
+          <i class="icon-edit icon-small"><span class="hide">New project</span></i></a>
+          {% endif %}
+      </h2>
+      <ul class="unstyled projects">
+        {% for project in projects %}
+        <li><i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
+          <a href="{% url "project" project.owner.user.username project.slug %}">{{ project.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 </div>
 {% endblock %}
-

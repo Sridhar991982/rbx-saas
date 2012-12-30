@@ -13,8 +13,7 @@ post_save.connect(on_user_profile_created, sender=User)
 
 
 def on_project_saved(sender, instance, created, **kwargs):
-    if created:
-        action.send(instance.owner, verb=_('created'), target=instance)
-    action.send(instance.owner, verb=_('updated'), target=instance)
+    verb = created and _('created') or _('updated')
+    action.send(instance.owner, verb=verb, target=instance)
 
 post_save.connect(on_project_saved, sender=Project)

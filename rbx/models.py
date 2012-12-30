@@ -34,9 +34,19 @@ BUILD_STATUS = (
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
+    company = models.CharField(max_length=100, blank=True)
+    school = models.CharField(max_length=100, blank=True)
+    website = models.URLField(blank=True)
+    gravatar_email = models.EmailField(blank=True)
+    location = models.CharField(max_length=100, blank=True)
 
     def __unicode__(self):
-        return self.user.get_full_name() or self.user.username
+        if self.user.get_full_name():
+            return '%s (%s)' % (self.user.get_full_name(), self.user.username)
+        return self.user.username
+
+    def gravatar(self):
+        return self.gravatar_email or self.user.email
 
 
 class Project(models.Model):

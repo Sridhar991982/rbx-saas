@@ -1,12 +1,12 @@
 var RBX = (function () {
 
     var _init = function () {
-    	_navTooltips()
+    	_tooltips()
     	_selectToDropdown()
     }
 
-    var _navTooltips = function () {
-        $('.nav a').tooltip({placement: 'bottom'})
+    var _tooltips = function () {
+        $('a').tooltip({placement: 'bottom'})
     }
 
     var _selectToDropdown = function () {

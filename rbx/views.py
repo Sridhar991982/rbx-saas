@@ -4,12 +4,10 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import slugify
-from django.utils.translation import ugettext as _
-from actstream import action
-from actstream.models import user_stream, actor_stream
+from actstream.models import user_stream, actor_stream, followers, following
 
 from rbx.forms import HomeSignupForm, NewProjectForm
-from rbx.models import Project
+from rbx.models import Project, UserProfile
 
 
 def home_or_dashboard(request):
@@ -40,11 +38,17 @@ def profile(request, username):
     try:
         user = User.objects.get(username=username)
         stream = actor_stream(user.get_profile())
+        projects = Project.objects.filter(owner=user)
+        user = user.get_profile()
+        user.nb_followers = len(followers(user))
+        user.nb_starred = len(following(user, Project))
+        user.nb_following = len(following(user, UserProfile))
     except User.DoesNotExist:
         raise Http404
     return render(request, 'profile.html', {
         'stream': stream,
-        'user': user,
+        'profile': user,
+        'projects': projects,
     })
 
 
@@ -60,7 +64,7 @@ def new_project(request):
                     slug=project_slug,
                     name=form.cleaned_data['name'],
                     owner=form.cleaned_data['owner'],
-                    public=form.cleaned_data['visibility'] is 'public'
+                    public=form.cleaned_data['visibility'] == 'public'
                 )
                 project.save()
             except Exception:
