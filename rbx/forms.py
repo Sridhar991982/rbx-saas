@@ -1,7 +1,6 @@
 from django import forms
 from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
@@ -11,11 +10,11 @@ from rbx.models import UserProfile, Project
 
 class HomeSignupForm(forms.Form):
     name = forms.CharField(max_length=100, label='',
-        widget=forms.TextInput(attrs={'placeholder': _('Pick a username')}))
+        widget=forms.TextInput(attrs={'placeholder': 'Pick a username'}))
     email = forms.EmailField(label='',
-        widget=forms.TextInput(attrs={'placeholder': _('Your email address')}))
+        widget=forms.TextInput(attrs={'placeholder': 'Your email address'}))
     password = forms.CharField(label='', widget=forms.PasswordInput(attrs={
-        'placeholder': _('Create a password')}))
+        'placeholder': 'Create a password'}))
 
 
 class NewProjectForm(forms.Form):

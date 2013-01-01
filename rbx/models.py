@@ -1,34 +1,33 @@
 from django.db import models
-from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
 
 PROJECT_RIGHT = (
-    ('view', _('View')),
-    ('edit', _('Edit')),
+    ('view', 'View'),
+    ('edit', 'Edit'),
 )
 
 PROJECT_FIELD = (
-    ('input', _('Inline input')),
-    ('textarea', _('Multiline text area')),
+    ('input', 'Inline input'),
+    ('textarea', 'Multiline text area'),
 )
 
 EXECUTOR_SOURCE_TYPE = (
-    ('gzip', _('GZIP archive')),
-    ('git', _('Git repository')),
-    ('hg', _('Mercurial repository')),
-    ('svn', _('Subversion repository')),
+    ('gzip', 'GZIP archive'),
+    ('git', 'Git repository'),
+    ('hg', 'Mercurial repository'),
+    ('svn', 'Subversion repository'),
 )
 
 EXECUTOR_PARAM_TYPE = (
-    ('string', _('String')),
-    ('text', _('Text')),
-    ('int', _('Integer')),
+    ('string', 'String'),
+    ('text', 'Text'),
+    ('int', 'Integer'),
 )
 
 BUILD_STATUS = (
-    ('success', _('Success')),
-    ('failed', _('Failed')),
+    ('success', 'Success'),
+    ('failed', 'Failed'),
 )
 
 
