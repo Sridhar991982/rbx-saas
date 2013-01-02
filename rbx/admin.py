@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from rbx.models import UserProfile, Project, ProjectRight, \
-    ProjectField, Executor, ExecutorParam, Build, BuildParam
+    Box, BoxParam, Run, RunParam
 
 
 class UserProfileInline(admin.StackedInline):
@@ -15,12 +15,37 @@ class UserAdmin(UserAdmin):
     inlines = (UserProfileInline, )
 
 
+class ProjectRightInline(admin.TabularInline):
+    model = ProjectRight
+
+
+class ProjectAdmin(admin.ModelAdmin):
+    model = Project
+    inlines = (ProjectRightInline,)
+    prepopulated_fields = {'slug': ('name',)}
+
+
+class BoxParamInline(admin.TabularInline):
+    model = BoxParam
+    prepopulated_fields = {'slug': ('name',)}
+
+
+class BoxAdmin(admin.ModelAdmin):
+    model = Box
+    inlines = (BoxParamInline,)
+
+
+class RunParamInline(admin.TabularInline):
+    model = RunParam
+
+
+class RunAdmin(admin.ModelAdmin):
+    model = Run
+    inlines = (RunParamInline,)
+    list_filter = ('start_datetime',)
+
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
-admin.site.register(Project)
-admin.site.register(ProjectRight)
-admin.site.register(ProjectField)
-admin.site.register(Executor)
-admin.site.register(ExecutorParam)
-admin.site.register(Build)
-admin.site.register(BuildParam)
+admin.site.register(Project, ProjectAdmin)
+admin.site.register(Box, BoxAdmin)
+admin.site.register(Run, RunAdmin)
