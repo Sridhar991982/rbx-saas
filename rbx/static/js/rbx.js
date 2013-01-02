@@ -6,7 +6,8 @@ var RBX = (function () {
     }
 
     var _tooltips = function () {
-        $('a').tooltip({placement: 'bottom'})
+    	if (!$('.hidden-desktop').is(':visible'))
+            $('a').tooltip({placement: 'bottom'})
     }
 
     var _selectToDropdown = function () {
@@ -14,7 +15,6 @@ var RBX = (function () {
             if (!($(e).data('convert') == 'no')) {
                 $(e).hide().wrap('<div class="btn-group" id="select-group-' + i + '" />');
                 var select = $('#select-group-' + i);
-                console.log($(e).find(':selected').text())
                 var current = ($(e).val()) ? $(e).find(':selected').text() : '&nbsp;';
                 select.html('<input type="hidden" value="' + $(e).val() + '" name="' + $(e).attr('name') + '" id="' + $(e).attr('id') + '" class="' + $(e).attr('class') + '" />' +
                             '<a class="btn dropdown-toggle" data-toggle="dropdown" href="#""><span>' + current +

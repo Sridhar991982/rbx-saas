@@ -63,13 +63,13 @@
             <ul class="nav pull-right">
               <li><a href="{% url "profile" user.username %}">{% gravatar user.email 20 %} {{ user }}</a></li>
               <li><a href="{% url "new_project" %}" rel="tooltip" title="Create a new project">
-                <i class="icon-edit icon-large"><span class="hide">New project</span></i>
+                <i class="icon-edit icon-large visible-desktop"></i> <span class="hidden-desktop">New project</span>
               </a></li>
               <li><a href="{% url "settings_profile" %}" rel="tooltip" title="Account settings">
-                <i class="icon-wrench icon-large"><span class="hide">Settings</span></i>
+                <i class="icon-wrench icon-large visible-desktop"></i> <span class="hidden-desktop">Settings</span>
               </a></li>
               <li><a href="{% url "logout" %}" rel="tooltip" title="Sign&nbsp;out">
-                <i class="icon-signout icon-large"><span class="hide">Sign out</span></i>
+                <i class="icon-signout icon-large visible-desktop"></i> <span class="hidden-desktop">Sign&nbsp;out</span>
               </a></li>
             {% else %}
               <li><a href="{% url "explore" %}">Explore</a></li>
@@ -103,6 +103,7 @@
     <script src="{% static "js/jquery-1.8.3.min.js" %}"></script>
     <script src="{% static "js/bootstrap.min.js" %}"></script>
     <script src="{% static "js/rbx.min.js" %}"></script>
+    {% block scripts %}{% endblock %}
 
   </body>
 </html>
