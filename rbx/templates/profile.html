@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load gravatar %}
 {% load url from future %}
+{% load rbx %}
 
 {% block title %}{% title profile %}{% endblock %}
 
@@ -17,7 +18,7 @@
           {% if user == profile.user %}
           <a href="{% url "settings_profile" %}" rel="tooltip" title="Edit your profile"
           class="space-left undecorated">
-          <i class="icon-wrench icon-small"><span class="hide">Edit profile</span></i></a>
+          <i class="icon-wrench icon-small"></i> <span class="tiny hidden-desktop">Edit profile</span></a>
           {% endif %}
         </h1>
         <div class="row-fluid">
@@ -72,26 +73,24 @@
     <div class="span7">
       <h2>Public activity</h2>
       {% for action in stream %}
-      <div class="row-fluid stream">
-        <div class="span1">
-          {% if action.target_content_type.name == "project" %}
-          <i class="pull-left icon-plus-sign"></i>
-          {% endif %}
+        {% if action.target_content_type.name == "project" %}
+        <div class="row-fluid stream">
+          <div class="span1 visible-desktop">
+            <i class="pull-left icon-plus-sign"></i>
+          </div>
+          <div class="span11">
+            <a href="{% url "profile" action.actor.user %}">{{ action.actor }}</a>
+            {{ action.verb }}
+            {{ action.target_content_type.name }}
+            <a href="{% url "project" action.actor.user action.target.slug %}">
+              {{ action.target.name }}
+            </a>
+            <small>{{ action.timesince }} ago</small>
+          </div>
         </div>
-        <div class="span11">
-          <a href="{% url "profile" action.actor.user %}">{{ action.actor }}</a>
-          {{ action.verb }}
-          {{ action.target_content_type.name }}
-          <a href="
-            {% if action.target_content_type.name == "project" %}
-            {% url "project" action.actor.user action.target.slug %}
-            {% endif %}
-          ">
-          {{ action.target.name }}
-          </a>
-          <small>{{ action.timesince }} ago</small>
-        </div>
-      </div>
+        {% endif %}
+      {% empty %}
+      <p class="stream">{{ profile }} has no public activity.</p>
       {% endfor %}
     </div>
     <div class="span5">
@@ -99,7 +98,7 @@
           {% if user == profile.user %}
           <a href="{% url "new_project" %}" rel="tooltip" title="Create a new project"
           class="space-left undecorated">
-          <i class="icon-edit icon-small"><span class="hide">New project</span></i></a>
+          <i class="icon-edit icon-small"></i> <span class="tiny hidden-desktop">New project</span></a>
           {% endif %}
       </h2>
       <ul class="unstyled projects">
@@ -107,6 +106,8 @@
         <li><i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
           <a href="{% url "project" project.owner.user.username project.slug %}">{{ project.name }}</a>
         </li>
+        {% empty %}
+        <li>{{ profile }} has no public project.</li>
         {% endfor %}
       </ul>
     </div>

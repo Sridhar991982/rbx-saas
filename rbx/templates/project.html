@@ -1,21 +1,175 @@
 {% extends "base.html" %}
 {% load gravatar %}
-{% load crispy_forms_tags %}
 {% load url from future %}
+{% load markdown_deux_tags %}
+{% load activity_tags %}
+{% load rbx %}
 
 {% block title %}{% title project.name %}{% endblock %}
 
 {% block content %}
 <div class="billboard">
   <div class="container">
-    <h1>
+    <h1 class="collapse-bottom">
       <i class="icon-{% if project.public %}un{% endif %}lock"></i>
       {{ project.name }}
+      {% if project|is_editable:user.get_profile %}
+      <a href="{% url "edit_project" project.owner.user.username project.slug %}"
+         title="Edit project" class="space-left undecorated modal-fragment"
+         data-target="#edit-modal" rel="tooltip">
+      <i class="icon-pencil icon-small"></i> <span class="tiny hidden-desktop">Edit project</span></a>
+      {% endif %}
     </h1>
-    <p><i class="icon-user"></i> {{ project.owner }}</p>
+    <div class="row-fluid">
+      <div class="span7">
+        <div class="btn-group">
+          <button class="btn"><i class="icon-cog"></i> Run now</button>
+          <button class="btn"><i class="icon-star"></i>
+            {% if request.user.get_profile|is_following:project %}Unstar
+            {% else %}Star{% endif %}
+          </button>
+        </div>
+        <ul class="unstyled space-top">
+          <li><i class="icon-{{ project.co_authors|pluralize:"user,group" }}"></i> By
+            {% for author in project.co_authors %}
+              {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          </li>
+          <li><i class="icon-time"></i> Created {{ project.created|timesince }} ago</li>
+        </ul>
+      </div>
+      <div class="span5">
+        <ul class="stats unstyled">
+          <li>
+            <i class="icon-cogs"></i>
+            <strong>{{ project.all_runs|length }}</strong>
+            <span>run{{ project.all_runs|pluralize }}</span>
+          </li>
+          <li>
+            <i class="icon-briefcase"></i>
+            <strong>{{ project.boxes|length }}</strong>
+            <span>box{{ project.boxes|pluralize:"es" }}</span>
+          </li>
+          <li>
+            <i class="icon-star"></i>
+            <strong>{{ project.stargazers|length }}</strong>
+            <span>stargazer{{ prorject.stargazers|pluralize }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
-<div class="container center">
-Project content
+<div class="container space-top">
+  <div class="row-fluid">
+    <div class="span8">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#desc"><i class="icon-file"></i>  Description</a></li>
+        <li><a href="#boxes"><i class="icon-briefcase"></i> Boxes</a></li>
+        <li><a href="#stargazers"><i class="icon-star"></i> Stargazers</a></li>
+        <li><a href="#activity"><i class="icon-bullhorn"></i> Activity</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="desc">
+        {% if project.description %}
+          {{ project.description|markdown }}
+        {% else %}
+          <p>No description available for this project.</p>
+        {% endif %}
+        </div>
+        <div class="tab-pane" id="boxes">
+          {% for box in project.boxes %}
+          {{ box }}
+          {% empty %}
+          <p>No boxes configured for this project yet.</p>
+          {% endfor %}
+          {% if project|is_editable:user.get_profile %}
+          <button class="btn btn-primary">Add a new box</button>
+          {% endif %}
+        </div>
+        <div class="tab-pane" id="stargazers">
+          {% for profile in project.stargazers %}
+          <div class="stream">
+            <p class="pull-left space-right">
+            {% gravatar profile.user.gravatar_email 25 %}
+            </p>
+            <p class="no-margin">
+            {{ profile.user|profile_url:profile.user.username }}
+            </p>
+          </div>
+          {% empty %}
+          <p>This project has no stargazers yet.</p>
+          {% endfor %}
+        </div>
+        <div class="tab-pane" id="activity">
+          {% for event in project.activity %}
+          <div class="stream">
+            <p class="pull-left space-right">
+            {% gravatar event.actor.user.gravatar_email 32 %}
+            </p>
+            <p class="no-margin">
+            {{ event.actor.user|profile_url:event.actor.user.username }}
+            {{ event.verb }} {{ event.target }}
+            <small>{{ event.timesince }} ago</small>
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="span4">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#all-runs" data-toggle="tab">
+          <i class="icon-cogs"></i> All runs</a></li>
+        <li><a href="#my-runs" data-toggle="tab">
+          <i class="icon-cog"></i> My runs</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="all-runs">
+          <ul class="unstyled runs">
+            {% for run in project.all_runs %}
+            <li>
+              <i class="icon-ok-sign"></i> <a href="#">Run #{{ run.pk }}</a>
+              <small>
+                Started by {{ run.user|profile_url:run.user.user.username }},
+                {{ run.start_datetime|timesince }} ago,
+                completed in {{ run.start_datetime|timesince:run.end_datetime }},
+              </small>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="tab-pane" id="my-runs">
+          <ul class="unstyled runs">
+            {% for run in project.user_runs %}
+            <li>
+              <i class="icon-ok-sign"></i> <a href="#">Run #{{ run.pk }}</a>
+              <small>
+                Started {{ run.start_datetime|timesince }} ago,
+                completed in {{ run.start_datetime|timesince:run.end_datetime }}
+              </small>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="edit-modal" class="modal hide fade" tabindex="-1" role="dialog"
+      aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="editModalLabel">Edit project</h3>
+  </div>
+  <div class="modal-body">
+  <p class="loading">Loading content...</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button class="btn btn-primary submit-change">Save changes</button>
+  </div>
 </div>
 {% endblock %}

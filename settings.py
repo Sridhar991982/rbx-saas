@@ -108,6 +108,11 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_gravatar',
     'crispy_forms',
+    'markdown_deux',
     'rbx',
     'actstream',
 )
+
+VIEW_RIGHT = 0
+EDIT_RIGHT = 1
+ADMIN_RIGHT = 2

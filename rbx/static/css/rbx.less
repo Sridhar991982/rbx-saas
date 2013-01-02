@@ -58,6 +58,14 @@ h1 {
     margin-left: 0.5em;
 }
 
+.space-right {
+    margin-right: 0.5em;
+}
+
+.no-margin {
+    margin: 0;
+}
+
 .collapse-bottom {
     margin-bottom: 0.4em;
 }
@@ -96,10 +104,15 @@ ul.stats {
     color: @gray;
 }
 
-.projects {
+.projects,
+.runs {
     li {
         border-bottom: 1px solid @grayLight2;
         padding: 0.4em;
+
+        &:last-child {
+            border-bottom: none;
+        }
 
         &:hover {
             background: @grayLighter;
@@ -109,6 +122,13 @@ ul.stats {
             font-weight: @headingsFontWeight;
             font-size: 1.1em;
         }
+    }
+}
+
+.runs {
+    li a {
+        font-weight: normal;
+        font-size: @baseFontSize;
     }
 }
 
@@ -125,6 +145,10 @@ a.undecorated:hover {
 	border-bottom: 1px solid @grayLight2;
 	padding: 0.6em;
 
+	&:last-child {
+        border-bottom: none;
+    }
+
     a {
         font-weight: @headingsFontWeight;
     }
@@ -133,11 +157,38 @@ a.undecorated:hover {
     	line-height: 1.3em;
         font-size: 2em;
         color: @grayLight2;
-        text-align: right;
     }
 
     small {
         display: block;
         line-height: 1em;
     }
+}
+
+.loading {
+	padding-left: 20px;
+    background: url('../img/loading.gif') no-repeat center left;
+}
+
+.nav-tabs {
+    font-weight: 400;
+}
+
+.tiny {
+    font-size: 0.4em;
+    vertical-align: middle;
+}
+
+.bolder {
+    font-weight: @headingsFontWeight;
+}
+
+.modal-body .unfragmented {
+    display: none;
+}
+
+.errorlist {
+	list-style: none;
+    color: @errorText;
+    margin: 0;
 }

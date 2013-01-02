@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load rbx %}
+{% load markdown_deux_tags %}
+
+{% block title %}Edit {{ project }}{% endblock %}
+
+{% block content %}
+<div class="container space-top">
+  <div id="fragment">
+    {% if status == "error" %}
+      {% include "alert-error.html" %}
+    {% elif not form.errors and status == "saved" %}
+      {% include "alert-saved.html" %}
+    {% endif %}
+
+    <form action="{% url "edit_project" project.owner.user.username project.slug %}" method="post">
+      {% csrf_token %}
+      <div class="control-group {% if edit_form.name.errors %}error{% endif %}">
+        {{ edit_form.name }}
+        {{ edit_form.name.errors }}
+      </div>
+
+      <div class="control-group {% if edit_form.public.errors %}error{% endif %}">
+        <label class="checkbox">{{ edit_form.public }}
+        <i class="icon-unlock"></i> This is a public project</label>
+        {{ edit_form.public.errors }}
+      </div>
+
+      <div class="control-group {% if edit_form.description.errors %}error{% endif %}">
+        {{ edit_form.description }}
+        {{ edit_form.description.errors }}
+      </div>
+      <small class="pull-right">Description are parsed with
+        <a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a></small>
+      <p class="unfragmented">
+        <input type="submit" class="btn btn-primary" value="Save changes" name="unfragmented" />
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}

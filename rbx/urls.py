@@ -20,5 +20,7 @@ urlpatterns = patterns('rbx.views',
     url(r'^features$', 'home', name='features'),
     url(r'^settings/', include(settings_urls)),
     url(r'^(?P<username>\w+)$', 'profile', name='profile'),
+    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)/edit$', 'edit_project',
+        name='edit_project'),
     url(r'^(?P<username>\w+)/(?P<project>[\w-]+)$', 'project', name='project'),
 )

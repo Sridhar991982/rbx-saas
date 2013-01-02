@@ -4,10 +4,12 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import slugify
-from actstream.models import user_stream, actor_stream, followers, following
+from actstream.models import user_stream, actor_stream, followers, following, \
+    target_stream
 
-from rbx.forms import HomeSignupForm, NewProjectForm
-from rbx.models import Project, UserProfile
+from settings import EDIT_RIGHT
+from rbx.forms import HomeSignupForm, NewProjectForm, EditProjectForm
+from rbx.models import Project, UserProfile, ProjectRight, Box, Run
 
 
 def home_or_dashboard(request):
@@ -86,8 +88,50 @@ def project(request, username, project):
             owner=User.objects.get(username=username).get_profile(),
             slug=project
         )
+        if not project.is_allowed(request.user.get_profile()):
+            raise Http404
+        project.co_authors = [project.owner]
+        project.co_authors.extend([r.user for r in ProjectRight.objects.filter(
+                                    project=project, type__gte=EDIT_RIGHT)])
+        project.stargazers = followers(project)
+        project.boxes = Box.objects.filter(project=project)
+        project.activity = target_stream(project)
+        project.all_runs = Run.objects.filter(box__in=project.boxes)
+        project.user_runs = project.all_runs.filter(
+                                user=request.user.get_profile())
     except Project.DoesNotExist:
         raise Http404
     return render(request, 'project.html', {
         'project': project,
+    })
+
+
+def edit_project(request, username, project):
+    status = 'edit'
+    try:
+        project = Project.objects.get(
+            owner=User.objects.get(username=username).get_profile(),
+            slug=project
+        )
+    except Project.DoesNotExist:
+        raise Http404
+    if not project.is_allowed(request.user.get_profile(), EDIT_RIGHT):
+        raise Http404
+    project.co_authors = [project.owner]
+    project.co_authors.extend([r.user for r in ProjectRight.objects.filter(
+                                project=project, type__gte=EDIT_RIGHT)])
+    if request.method == 'POST':
+        form = EditProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            try:
+                form.save()
+                status = 'saved'
+            except Exception:
+                status = 'error'
+    else:
+        form = EditProjectForm(instance=project)
+    return render(request, 'edit_project.html', {
+        'project': project,
+        'edit_form': form,
+        'status': status,
     })

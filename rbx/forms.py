@@ -7,6 +7,13 @@ from crispy_forms.layout import Layout, Field, Submit, Div
 
 from rbx.models import UserProfile, Project
 
+PROJECT_VISIBILITY = (
+    ('public', mark_safe('<i class="icon-unlock icon-large"></i> Anyone can \
+                        see the project. You can choose who can modify it.')),
+    ('private', mark_safe('<i class="icon-lock icon-large"></i> You can \
+                        choose who can see and modify the project.')),
+)
+
 
 class HomeSignupForm(forms.Form):
     name = forms.CharField(max_length=100, label='',
@@ -27,16 +34,9 @@ class NewProjectForm(forms.Form):
                         # TODO: Add user's teams
                         UserProfile.objects.filter(pk=user.pk),
                         empty_label=None),
-            'visibility': forms.ChoiceField(choices=(
-                    ('public', mark_safe(
-                        '<i class="icon-unlock icon-large"></i> Anyone can \
-                        see the project. You can choose who can modify it.')),
-                    ('private', mark_safe(
-                        '<i class="icon-lock icon-large"></i> You can \
-                        choose who can see and modify the project.')),
-                ),
-                widget=forms.RadioSelect,
-                initial='public',
+            'visibility': forms.ChoiceField(choices=PROJECT_VISIBILITY,
+                                            widget=forms.RadioSelect,
+                                            initial='public',
             ),
         }
 
@@ -65,3 +65,19 @@ class NewProjectForm(forms.Form):
             raise forms.ValidationError(
                 'Similar name already exists on this account')
         return self.cleaned_data['name']
+
+
+class EditProjectForm(forms.ModelForm):
+
+    class Meta:
+        model = Project
+        fields = ('name', 'description', 'public')
+
+    name = forms.CharField(
+        widget=forms.TextInput(
+            attrs={'class': 'input-block-level',
+                   'required': 'required'}))
+    description = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'class': 'input-block-level',
+            'placeholder': 'Add project description...'}))
+    public = forms.BooleanField()
