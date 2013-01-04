@@ -1,0 +1,7 @@
+Django==1.4.3
+django-activity-stream==0.4.4
+django-crispy-forms==1.2.3
+django-gravatar2==1.0.6
+django-markdown-deux==1.0.3
+markdown2==2.1.0
+wsgiref==0.1.2

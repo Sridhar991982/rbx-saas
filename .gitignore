@@ -1,5 +1,6 @@
 rbx.db
 rbx/static/admin
+lib/django
 *.pyc
 ~*
 *.swp

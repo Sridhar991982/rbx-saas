@@ -26,7 +26,7 @@ rbx-js:
 	uglifyjs $(JS_DIR)/rbx.js -o $(JS_DIR)/rbx.min.js -c
 
 run:
-	@python manage.py runserver
+	@PYTHONPATH=./lib:$PYTHONPATH python manage.py runserver
 
 watch:
 	watchr -e "watch('$(CSS_DIR)/.*\.less') { system 'make' }"
