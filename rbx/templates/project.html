@@ -105,10 +105,10 @@
           {% for event in project.activity %}
           <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar event.actor.user.gravatar_email 32 %}
+            {% gravatar event.actor.gravatar 32 %}
             </p>
             <p class="no-margin">
-            {{ event.actor.user|profile_url:event.actor.user.username }}
+            {{ event.actor|profile_url:event.actor.user.username }}
             {{ event.verb }} {{ event.target }}
             <small>{{ event.timesince }} ago</small>
             </p>
