@@ -72,8 +72,8 @@ def new_project(request):
             except Exception:
                 error_occured = True
             else:
-                return HttpResponseRedirect(reverse('project',
-                    args=[form.cleaned_data['owner'], project_slug]))
+                return HttpResponseRedirect(reverse('project',  args=[
+                    form.cleaned_data['owner'].user.username, project_slug]))
     else:
         form = NewProjectForm(user=request.user.get_profile())
     return render(request, 'new_project.html', {
