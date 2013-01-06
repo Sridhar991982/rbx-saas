@@ -1,5 +1,5 @@
-CSS_DIR=rbx/static/css
-JS_DIR=rbx/static/js
+CSS_DIR=public/static/css
+JS_DIR=public/static/js
 
 all: style js
 
