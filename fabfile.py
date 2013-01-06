@@ -11,6 +11,8 @@ PROJECT_NAME = basename(dirname(__file__))
 
 
 def deploy():
+    ''' Deploy app on remote server
+    '''
     clean()
     rsync_project('.', exclude=['.git', 'rbx.db', 'fabfile.py', 'Makefile',
                     'requirements.txt', 'settings.py'], delete=True)
@@ -23,6 +25,8 @@ def deploy():
 
 
 def settings():
+    ''' Configure remote app settings
+    '''
     with cd(PROJECT_NAME):
         with quiet():
             is_configured = run('test -n ' +
@@ -39,9 +43,13 @@ def settings():
 
 
 def syncdb():
+    ''' Sync remove app database
+    '''
     with cd(PROJECT_NAME):
         run('PYTHONPATH=./lib python manage.py syncdb')
 
 
 def clean():
+    ''' Clean local *.pyc
+    '''
     local('find -name "*.pyc" -exec rm {} \;')
