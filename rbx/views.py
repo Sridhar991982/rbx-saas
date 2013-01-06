@@ -27,8 +27,11 @@ def home(request):
 @login_required
 def dashboard(request):
     stream = user_stream(request.user.get_profile())
+    projects = Project.objects.filter(
+                owner=request.user.get_profile).order_by('-created')
     return render(request, 'dashboard.html', {
         'stream': stream,
+        'projects': projects,
     })
 
 
@@ -40,7 +43,7 @@ def profile(request, username):
     try:
         user = User.objects.get(username=username)
         stream = actor_stream(user.get_profile())
-        projects = Project.objects.filter(owner=user)
+        projects = Project.objects.filter(owner=user).order_by('-created')
         user = user.get_profile()
         user.nb_followers = len(followers(user))
         user.nb_starred = len(following(user, Project))
