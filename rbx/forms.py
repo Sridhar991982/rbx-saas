@@ -80,4 +80,4 @@ class EditProjectForm(forms.ModelForm):
     description = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'class': 'input-block-level',
             'placeholder': 'Add project description...'}))
-    public = forms.BooleanField()
+    public = forms.BooleanField(required=False)
