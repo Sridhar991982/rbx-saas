@@ -32,7 +32,13 @@ var RBX = (function () {
         $('.submit-change').on('click', function () {
         	var modal = $(this).parent().parent(),
                 form = modal.find('form')
-            modal.find('.modal-body').load(form.attr('action') + ' #fragment', form.serializeArray())
+            modal.find('.modal-body').load(form.attr('action') + ' #fragment',
+                form.serializeArray(), function () {
+                modal.on('hidden', function () {
+                	modal.off('hidden')
+                	location.reload()
+                })
+            })
             return false;
         })
     }
