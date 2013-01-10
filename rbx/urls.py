@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, url, include
+from django.views.generic import TemplateView
 
 settings_urls = patterns('rbx.views',
     url(r'^profile$', 'home', name='settings_profile'),
@@ -11,7 +12,8 @@ urlpatterns = patterns('rbx.views',
     url(r'^dashboard$', 'dashboard'),
     url(r'^signup$', 'signup', name='signup'),
     url(r'^plans$', 'home', name='plans'),
-    url(r'^terms$', 'home', name='terms'),
+    url(r'^terms$', TemplateView.as_view(template_name="terms.html"),
+        name='terms'),
     url(r'^privacy$', 'home', name='privacy'),
     url(r'^search$', 'home', name='search'),
     url(r'^explore$', 'home', name='explore'),
