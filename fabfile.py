@@ -74,10 +74,14 @@ def _compile_less(name):
 def compile():
     _compile_less('rbx')
     _compile_less('bootstrap')
-    _compile_less('bootstrap-responsive')
+    _compile_less('responsive')
     local('uglifyjs %(dir)s/rbx.js -o %(dir)s/rbx.min.js -c'
             % {'dir': JS_DIR})
 
 
 def serve():
     local('PYTHONPATH=./lib:$PYTHONPATH python manage.py runserver')
+
+
+def shell():
+    local('PYTHONPATH=./lib:$PYTHONPATH python manage.py shell')
