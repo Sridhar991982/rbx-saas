@@ -2,6 +2,7 @@ var RBX = (function () {
 
     var _init = function () {
     	_tooltips()
+    	_dissmissSiteAlert()
 
     	_modalFragment()
     	_submitModalChanges()
@@ -16,6 +17,12 @@ var RBX = (function () {
     	$(window).resize(function () {
             if (!$('.hidden-desktop').is(':visible'))
                 $('a').tooltip({placement: 'bottom'})
+        })
+    }
+
+    var _dissmissSiteAlert = function () {
+        $('.site-alert button.close').on('click', function () {
+            $(this).parent().parent().hide()
         })
     }
 
