@@ -9,6 +9,8 @@ from fabric.context_managers import quiet
 
 env.hosts = ['rbx@ssh.alwaysdata.com']
 PROJECT_NAME = basename(dirname(__file__))
+CSS_DIR = 'rbx/static/css'
+JS_DIR = 'rbx/static/js'
 
 
 def deploy(configure=False):
@@ -58,3 +60,24 @@ def clean():
     ''' Clean local *.pyc
     '''
     local('find -name "*.pyc" -exec rm {} \;')
+
+
+def _compile_less(name):
+    opt = {'dir': CSS_DIR, 'name': name}
+    local('recess --compile %(dir)s/%(name)s.less > %(dir)s/%(name)s.css'
+            % opt)
+    local('recess --compress %(dir)s/%(name)s.css > %(dir)s/%(name)s.min.css'
+            % opt)
+    local('rm %(dir)s/%(name)s.css' % opt)
+
+
+def compile():
+    _compile_less('rbx')
+    _compile_less('bootstrap')
+    _compile_less('bootstrap-responsive')
+    local('uglifyjs %(dir)s/rbx.js -o %(dir)s/rbx.min.js -c'
+            % {'dir': JS_DIR})
+
+
+def serve():
+    local('PYTHONPATH=./lib:$PYTHONPATH python manage.py runserver')
