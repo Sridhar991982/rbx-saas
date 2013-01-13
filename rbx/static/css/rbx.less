@@ -15,7 +15,13 @@
 .billboard {
     #gradient > .radial-ellipse(@white, @grayLight2);
     border-bottom: 1px solid @gray2;
-    padding: 60px;
+    padding: 60px 0;
+}
+
+@media (min-width: 1200px) {
+    .billboard {
+        padding: 60px;
+    }
 }
 
 footer {
