@@ -133,3 +133,11 @@ class RunParam(models.Model):
         return '%s run #%d\'s %s' % (self.run.box.project.name,
                                      self.id,
                                      self.box_param.name)
+
+
+class Invitation(models.Model):
+    email = models.EmailField()
+    request_date = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return 'Invitation request: %s' % self.email

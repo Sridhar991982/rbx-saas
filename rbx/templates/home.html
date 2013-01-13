@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load url from future %}
+{% load crispy_forms_tags %}
 
 {% block content %}
     <div class="billboard">
@@ -12,12 +13,12 @@
           </div>
         {% if not user.is_authenticated %}
           <div class="span4 well">
-            <form action="{% url "signup" %}" method="post" class="signup">
+            <form method="post" action="{% url "home" %}">
+              <h4>Become a beta user!</h4>
               {% csrf_token %}
-              {{ signup_form.as_p }}
-              <input type="hidden" name="source" value="home"/>
-              <input type="submit" class="btn btn-primary btn-large btn-block" value="Sign up for free" />
-              <p class="small center"><a href="{% url "plans" %}">See plans and pricing</a></p>
+              {{ request_invite.as_p }}
+              <input type="submit" class="btn btn-primary btn-large btn-block"
+                     value="Request an invitation" />
             </form>
           </div>
         {% endif %}

@@ -1,6 +1,7 @@
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import slugify
@@ -8,7 +9,7 @@ from actstream.models import user_stream, actor_stream, followers, following, \
     target_stream
 
 from settings import EDIT_RIGHT
-from rbx.forms import HomeSignupForm, NewProjectForm, EditProjectForm
+from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm
 from rbx.models import Project, UserProfile, ProjectRight, Box, Run
 
 
@@ -19,8 +20,20 @@ def home_or_dashboard(request):
 
 
 def home(request):
+    if request.method == 'POST':
+        form = RequestInviteForm(request.POST)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, 'Invitation request successfully ' +
+                                          'submitted')
+            except Exception:
+                messages.error(request, 'Oops, something wrong happened, ' +
+                                        'please try again...')
+    else:
+        form = RequestInviteForm()
     return render(request, 'home.html', {
-        'signup_form': HomeSignupForm,
+        'request_invite': form,
     })
 
 
@@ -33,10 +46,6 @@ def dashboard(request):
         'stream': stream,
         'projects': projects,
     })
-
-
-def signup(request, from_home=False):
-    return render(request, 'signup.html')
 
 
 def profile(request, username):

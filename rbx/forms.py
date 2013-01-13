@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
 
-from rbx.models import UserProfile, Project
+from rbx.models import UserProfile, Project, Invitation
 
 PROJECT_VISIBILITY = (
     ('public', mark_safe('<i class="icon-unlock icon-large"></i> Anyone can \
@@ -22,6 +22,17 @@ class HomeSignupForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'Your email address'}))
     password = forms.CharField(label='', widget=forms.PasswordInput(attrs={
         'placeholder': 'Create a password'}))
+
+
+class RequestInviteForm(forms.ModelForm):
+
+    class Meta:
+        model = Invitation
+
+    email = forms.EmailField(label='',
+        widget=forms.TextInput(attrs={'class': 'input-block-level',
+                                      'required': 'required',
+                                      'placeholder': 'Your email address'}))
 
 
 class NewProjectForm(forms.Form):
