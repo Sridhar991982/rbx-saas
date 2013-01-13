@@ -83,5 +83,5 @@ def serve():
     local('PYTHONPATH=./lib:$PYTHONPATH python manage.py runserver')
 
 
-def shell():
-    local('PYTHONPATH=./lib:$PYTHONPATH python manage.py shell')
+def django(arg):
+    local('PYTHONPATH=./lib:$PYTHONPATH python manage.py %s' % arg)
