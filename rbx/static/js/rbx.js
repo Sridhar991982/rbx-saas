@@ -15,10 +15,12 @@ var RBX = (function () {
     }
 
     var _tooltips = function () {
-    	$(window).resize(function () {
-            if (!$('.hidden-desktop').is(':visible'))
+    	$(window).on('resize', function () {
+            if (!window.matchMedia || (window.matchMedia('(min-width: 979px)').matches))
                 $('a[rel="tooltip"]').tooltip({placement: 'bottom'})
-        })
+            else
+                $('a[rel="tooltip"]').tooltip('destroy')
+        }).trigger('resize')
     }
 
     var _dissmissSiteAlert = function () {
