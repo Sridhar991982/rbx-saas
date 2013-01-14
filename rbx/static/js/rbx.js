@@ -8,6 +8,7 @@ var RBX = (function () {
     	_submitModalChanges()
 
     	_selectToDropdown()
+    	_newBoxForm()
 
         _navTabs()
     	_activateTabFromHash()
@@ -16,13 +17,13 @@ var RBX = (function () {
     var _tooltips = function () {
     	$(window).resize(function () {
             if (!$('.hidden-desktop').is(':visible'))
-                $('a').tooltip({placement: 'bottom'})
+                $('a[rel="tooltip"]').tooltip({placement: 'bottom'})
         })
     }
 
     var _dissmissSiteAlert = function () {
         $('.site-alert button.close').on('click', function () {
-            $(this).parent().parent().hide()
+            $(this).parent().parent().remove()
         })
     }
 
@@ -54,20 +55,30 @@ var RBX = (function () {
     var _selectToDropdown = function () {
         $('select').each(function(i, e){
             if (!($(e).data('convert') == 'no')) {
-                $(e).hide().wrap('<div class="btn-group" id="select-group-' + i + '" />');
+                $(e).hide().wrap('<div class="btn-group" id="select-group-' + i + '" />')
+
                 var select = $('#select-group-' + i),
-                    current = ($(e).val()) ? $(e).find(':selected').text() : '&nbsp;';
-                select.html('<input type="hidden" value="' + $(e).val() + '" name="' + $(e).attr('name') + '" id="' + $(e).attr('id') + '" class="' + $(e).attr('class') + '" />' +
-                            '<a class="btn dropdown-toggle" data-toggle="dropdown" href="#""><span>' + current +
-                            '</span> <span class="caret"></span></a>' +
-                            '<ul class="dropdown-menu"></ul>');
+                    current = ($(e).val()) ? $(e).find(':selected').text() : '&nbsp;'
+
+                select.html('<input type="hidden" value="' + $(e).val() +
+                                '" name="' + $(e).attr('name') + '" id="' + $(e).attr('id') +
+                                '" class="' + $(e).attr('class') + '" />' +
+                            '<a class="btn dropdown-toggle" data-toggle="dropdown" href="#""><span>' +
+                              current +'</span> <span class="caret"></span></a>' +
+                            '<ul class="dropdown-menu"></ul>')
+
                 $(e).find('option').each(function(o,q) {
-                    select.find('.dropdown-menu').append('<li><a href="#" data-value="' + $(q).attr('value') + '">' + $(q).text() + '</a></li>');
-                    if ($(q).attr('selected')) select.find('.dropdown-menu li:eq(' + o + ')').click();
+                    select.find('.dropdown-menu').append('<li><a href="#" data-value="' + $(q).attr('value') + '">' + $(q).text() + '</a></li>')
+                    if ($(q).attr('selected'))
+                        select.find('.dropdown-menu li:eq(' + o + ')').click();
                 });
+
                 select.find('.dropdown-menu a').click(function() {
-                    select.find('input[type=hidden]').val($(this).data('value')).change();
-                    select.find('.btn:eq(0) span:eq(0)').text($(this).text());
+                    select.find('input[type=hidden]').val($(this).data('value')).change()
+                    select.find('.btn:eq(0) span:eq(0)').text($(this).text())
+                    console.log($(this).parent().parent().parent())
+                    $(this).parent().parent().parent().removeClass('open')
+                    return false
                 });
             }
         });
@@ -86,6 +97,16 @@ var RBX = (function () {
             hashPieces = hash.split('?'),
             activeTab = $('[href=#' + hashPieces[0] + ']')
             activeTab && activeTab.tab('show')
+    }
+
+    var _newBoxForm = function () {
+        $('.new_box').on('click', function () {
+            $(this).parent().find('.box-list').append($('#tpl_box_form').html())
+            $(this).remove()
+            $('#id_source').parent().append($('#id_source_type').clone())
+            $('#div_id_source_type').remove()
+            _selectToDropdown()
+        })
     }
 
     return {

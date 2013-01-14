@@ -4,6 +4,7 @@
 {% load markdown_deux_tags %}
 {% load activity_tags %}
 {% load rbx %}
+{% load crispy_forms_tags %}
 
 {% block title %}{% title project.name %}{% endblock %}
 
@@ -24,10 +25,11 @@
       <div class="span7">
         <div class="btn-group">
           <button class="btn"><i class="icon-cog"></i> Run now</button>
-          <button class="btn"><i class="icon-star"></i>
-            {% if request.user.get_profile|is_following:project %}Unstar
+          <a class="btn" href="{% url "star_project" project.owner.user.username project.slug %}">
+            <i class="icon-star"></i>
+            {% if request.user|is_following:project %}Unstar
             {% else %}Star{% endif %}
-          </button>
+          </a>
         </div>
         <ul class="unstyled space-top">
           <li><i class="icon-{{ project.co_authors|pluralize:"user,group" }}"></i> By
@@ -78,23 +80,50 @@
         {% endif %}
         </div>
         <div class="tab-pane" id="boxes">
-          {% for box in project.boxes %}
-          {{ box }}
-          {% empty %}
-          <p>No boxes configured for this project yet.</p>
-          {% endfor %}
-          {% if project|is_editable:user.get_profile %}
-          <button class="btn btn-primary">Add a new box</button>
+          <div class="box-list">
+            {% for box in project.boxes %}
+            <h3><a href="{% url "box" project.owner.user.username project.slug box.name %}">
+                {{ box.name }} box</a></h3>
+            <div class="row-fluid space-bottom">
+              <div class="span3">
+                {{ box.nb_runs }} run{{ box.nb_runs|pluralize }}<br />
+                Avg. run time: {{ box.avg_time }}s
+              </div>
+              <div class="span9">
+                <p>
+                  {% if box.description %}{{ box.description }}
+                  {% else %}No box description available.{% endif %}
+                </p>
+                <p>Source code: <em>{{ box.source }}</em></p>
+              </div>
+            </div>
+            {% empty %}
+            <div class="row-fluid">
+              <div class="span12">
+                <p>No boxes configured for this project yet.</p>
+              </div>
+            </div>
+            {% endfor %}
+            {% if box_error %}
+            <div class="row-fluid">
+              <div class="span12">
+              {% crispy box_form %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          {% if project|is_editable:user.get_profile and not box_error %}
+          <button class="btn btn-primary new_box">Add a new box</button>
           {% endif %}
         </div>
         <div class="tab-pane" id="stargazers">
           {% for profile in project.stargazers %}
           <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar profile.user.gravatar_email 25 %}
+            {% gravatar profile.get_profile.gravatar 25 %}
             </p>
             <p class="no-margin">
-            {{ profile.user|profile_url:profile.user.username }}
+            {{ profile.get_profile|profile_url:profile.username }}
             </p>
           </div>
           {% empty %}
@@ -105,10 +134,10 @@
           {% for event in project.activity %}
           <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar event.actor.gravatar 32 %}
+            {% gravatar event.actor.get_profile.gravatar 32 %}
             </p>
             <p class="no-margin">
-            {{ event.actor|profile_url:event.actor.user.username }}
+            {{ event.actor.get_profile|profile_url:event.actor.username }}
             {{ event.verb }} {{ event.target }}
             <small>{{ event.timesince }} ago</small>
             </p>
@@ -136,6 +165,8 @@
                 completed in {{ run.start_datetime|timesince:run.end_datetime }},
               </small>
             </li>
+            {% empty %}
+            <li>No run for the moment.</li>
             {% endfor %}
           </ul>
         </div>
@@ -149,6 +180,8 @@
                 completed in {{ run.start_datetime|timesince:run.end_datetime }}
               </small>
             </li>
+            {% empty %}
+            <li>You have never run this project.</li>
             {% endfor %}
           </ul>
         </div>
@@ -172,4 +205,13 @@
     <button class="btn btn-primary submit-change">Save changes</button>
   </div>
 </div>
+
+<script type="text/html" id="tpl_box_form">
+<div class="row-fluid">
+  <div class="span12">
+  {% crispy box_form %}
+  </div>
+</div>
+</script>
+
 {% endblock %}

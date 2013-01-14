@@ -9,9 +9,6 @@
 <div class="billboard">
   <div class="container">
     <h1>Create a new project</h1>
-    {% if error_occured %}
-    {% include "alert-error.html" %}
-    {% endif %}
     {% crispy create_project_form %}
   </div>
 </div>
@@ -21,8 +18,8 @@
       <p class="icon big"><i class="icon-question-sign icon-large"></i></p>
       <h2>New to Run in the Box?</h2>
       <p>
-        Learn the basis of Run in the Box and how it works by exploring the <a
-        href="{% url "help" %}">help section</a>.
+        Discover Run in the Box power and diversity by exploring some <a
+        href="{% url "explore" %}">existing projects</a>.
       <p>
     </div>
     <div class="span6">

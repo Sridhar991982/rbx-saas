@@ -10,10 +10,9 @@ PROJECT_RIGHT = (
 )
 
 EXECUTOR_SOURCE_TYPE = (
-    ('gzip', 'GZIP archive'),
-    ('git', 'Git repository'),
-    ('hg', 'Mercurial repository'),
-    ('svn', 'Subversion repository'),
+    ('git', 'Git'),
+    ('hg', 'Mercurial'),
+    ('svn', 'Subversion'),
 )
 
 EXECUTOR_PARAM_TYPE = (
@@ -82,12 +81,21 @@ class ProjectRight(models.Model):
         return '%s\'s %s right' % (self.type, self.project.name)
 
 
+class OperatingSystem(models.Model):
+    identifier = models.CharField(max_length=255)
+    name = models.CharField(max_length=50)
+
+    def __unicode__(self):
+        return self.name
+
+
 class Box(models.Model):
     project = models.ForeignKey(Project, db_index=True)
+    name = models.SlugField(max_length=30)
     description = models.TextField(blank=True)
     source = models.CharField(max_length=255)
     source_type = models.CharField(choices=EXECUTOR_SOURCE_TYPE, max_length=20)
-    language = models.CharField(max_length=40)
+    os = models.ForeignKey(OperatingSystem)
     install = models.CharField(max_length=255, blank=True)
     script = models.CharField(max_length=255)
     after_script = models.CharField(max_length=255, blank=True)
@@ -96,7 +104,7 @@ class Box(models.Model):
     lifetime = models.PositiveSmallIntegerField(default=8)
 
     def __unicode__(self):
-        return '%s\'s box' % self.project.name
+        return '%s\'s %s box' % (self.project.name, self.name)
 
     class Meta:
         verbose_name_plural = 'boxes'

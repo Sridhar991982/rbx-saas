@@ -5,11 +5,14 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import slugify
+from django.db.models import Avg, Count
 from actstream.models import user_stream, actor_stream, followers, following, \
     target_stream
+from actstream.actions import follow, unfollow
 
 from settings import EDIT_RIGHT
-from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm
+from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
+    BoxForm
 from rbx.models import Project, UserProfile, ProjectRight, Box, Run
 
 
@@ -68,7 +71,6 @@ def profile(request, username):
 
 @login_required
 def new_project(request):
-    error_occured = False
     if request.method == 'POST':
         form = NewProjectForm(request.POST, user=request.user.get_profile())
         if form.is_valid():
@@ -82,7 +84,8 @@ def new_project(request):
                 )
                 project.save()
             except Exception:
-                error_occured = True
+                messages.error(request, 'Oops, something wrong happened, ' +
+                                        'please try again...')
             else:
                 return HttpResponseRedirect(reverse('project',  args=[
                     form.cleaned_data['owner'].user.username, project_slug]))
@@ -90,7 +93,6 @@ def new_project(request):
         form = NewProjectForm(user=request.user.get_profile())
     return render(request, 'new_project.html', {
         'create_project_form': form,
-        'error_occured': error_occured,
     })
 
 
@@ -111,10 +113,33 @@ def project(request, username, project):
         project.all_runs = Run.objects.filter(box__in=project.boxes)
         project.user_runs = project.all_runs.filter(
                                 user=request.user.get_profile())
+
+        project.boxes.annotate(nb_runs=Count('run'))
+
+        if request.method == 'POST':
+            box_form = BoxForm(request.POST, project=project,
+                                initial={'project': project})
+            if box_form.is_valid():
+                try:
+                    box_form.save()
+                    messages.success(request, '%s box successfully saved'
+                            % box_form.cleaned_data['name'].title())
+                except Exception:
+                    messages.error(request, 'Oops, something wrong happened,' +
+                                            ' please try again...')
+                finally:
+                    return HttpResponseRedirect(reverse('project',
+                         args=(project.owner.user.username,
+                               project.slug)))
+        else:
+            box_form = BoxForm(project=project,
+                                initial={'project': project})
     except Project.DoesNotExist:
         raise Http404
     return render(request, 'project.html', {
         'project': project,
+        'box_error': request.method == 'POST',
+        'box_form': box_form,
     })
 
 
@@ -147,3 +172,28 @@ def edit_project(request, username, project):
         'edit_form': form,
         'status': status,
     })
+
+
+def star_project(request, username, project):
+    try:
+        project = Project.objects.get(
+            owner=User.objects.get(username=username).get_profile(),
+            slug=project
+        )
+        if not project.is_allowed(request.user.get_profile()):
+            raise Http404
+        if project in following(request.user, Project):
+            unfollow(request.user, project)
+        else:
+            follow(request.user, project, actor_only=False)
+    except Project.DoesNotExist:
+        raise Http404
+    except:
+        raise
+    return HttpResponseRedirect(reverse('project',
+                args=(project.owner.user.username,
+                      project.slug)))
+
+
+def box(request, username, project, box):
+    pass
