@@ -42,7 +42,7 @@ var RBX = (function () {
                 form = modal.find('form')
             modal.find('.modal-body').load(form.attr('action') + ' #fragment',
                 form.serializeArray(), function () {
-                modal.find('[data-dismiss="modal"]').text('Close')
+                modal.find('button.btn[data-dismiss="modal"]').text('Close')
                 modal.on('hidden', function () {
                 	modal.off('hidden')
                 	location.reload()
