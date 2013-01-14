@@ -1,11 +1,12 @@
 from django.db import models
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext as _
 
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import User
+
 
 try:
     from django.utils import timezone
@@ -23,7 +24,7 @@ class Follow(models.Model):
     """
     Lets a user follow the activities of any specific actor
     """
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(settings.AUTH_PROFILE_MODULE)
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.CharField(max_length=255)
@@ -184,7 +185,7 @@ if actstream_settings.USE_JSONFIELD:
     try:
         from jsonfield.fields import JSONField
     except ImportError:
-        raise ImproperlyConfigured('You must have django-extensions installed '
+        raise ImproperlyConfigured('You must have django-jsonfield installed '
                                 'if you wish to use a JSONField on your actions')
     JSONField(blank=True, null=True).contribute_to_class(Action, 'data')
 
