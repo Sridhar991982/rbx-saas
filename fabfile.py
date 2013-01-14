@@ -44,7 +44,7 @@ def setup():
         sed('settings.py', 'prod', 'default')
 
         sed('settings.py', 'django.db.backends.dummy',
-                        'django.db.backends.postgresql_psycopg2')
+                        'django.db.backends.mysql')
         run('sed -i.bak -r -e "s/PASSWORD\': \'\'/PASSWORD\':' +
             '\'%s\'/g" settings.py' % env.password, quiet=True)
 

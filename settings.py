@@ -16,7 +16,7 @@ DATABASES = {
         'NAME': 'rbx_django',
         'USER': 'rbx',
         'PASSWORD': '',
-        'HOST': 'postgresql1.alwaysdata.com',
+        'HOST': 'mysql2.alwaysdata.com',
     }
 }
 

@@ -76,7 +76,6 @@ var RBX = (function () {
                 select.find('.dropdown-menu a').click(function() {
                     select.find('input[type=hidden]').val($(this).data('value')).change()
                     select.find('.btn:eq(0) span:eq(0)').text($(this).text())
-                    console.log($(this).parent().parent().parent())
                     $(this).parent().parent().parent().removeClass('open')
                     return false
                 });
