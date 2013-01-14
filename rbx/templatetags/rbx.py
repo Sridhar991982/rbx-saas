@@ -24,8 +24,8 @@ def is_editable(project, user):
 
 @register.filter
 def profile_url(user, username):
-    return mark_safe('<a href="%s">%s</a>' % (reverse('profile',
-                                            args=[username]), user))
+    return mark_safe('<a href="%s">%s</a>'
+        % (reverse('profile', args=[username]), user))
 
 
 @register.filter

@@ -27,7 +27,7 @@
           <button class="btn"><i class="icon-cog"></i> Run now</button>
           <a class="btn" href="{% url "star_project" project.owner.user.username project.slug %}">
             <i class="icon-star"></i>
-            {% if request.user|is_following:project %}Unstar
+            {% if user|is_following:project %}Unstar
             {% else %}Star{% endif %}
           </a>
         </div>
@@ -120,10 +120,10 @@
           {% for profile in project.stargazers %}
           <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar profile.get_profile.gravatar 25 %}
+            {% gravatar profile.gravatar 25 %}
             </p>
             <p class="no-margin">
-            {{ profile.get_profile|profile_url:profile.username }}
+            {{ profile|profile_url:profile.user.username }}
             </p>
           </div>
           {% empty %}
@@ -134,10 +134,10 @@
           {% for event in project.activity %}
           <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar event.actor.get_profile.gravatar 32 %}
+            {% gravatar event.actor.gravatar 32 %}
             </p>
             <p class="no-margin">
-            {{ event.actor.get_profile|profile_url:event.actor.username }}
+            {{ event.actor|profile_url:event.actor.user.username }}
             {{ event.verb }} {{ event.target }}
             <small>{{ event.timesince }} ago</small>
             </p>

@@ -8,7 +8,7 @@ from django.template.defaultfilters import slugify
 from django.db.models import Avg, Count
 from actstream.models import user_stream, actor_stream, followers, following, \
     target_stream
-from actstream.actions import follow, unfollow
+from actstream.actions import follow, unfollow, is_following
 
 from settings import EDIT_RIGHT
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
@@ -174,6 +174,7 @@ def edit_project(request, username, project):
     })
 
 
+@login_required
 def star_project(request, username, project):
     try:
         project = Project.objects.get(
@@ -182,10 +183,10 @@ def star_project(request, username, project):
         )
         if not project.is_allowed(request.user.get_profile()):
             raise Http404
-        if project in following(request.user, Project):
-            unfollow(request.user, project)
+        if is_following(request.user.get_profile(), project):
+            unfollow(request.user.get_profile(), project)
         else:
-            follow(request.user, project, actor_only=False)
+            follow(request.user.get_profile(), project, actor_only=False)
     except Project.DoesNotExist:
         raise Http404
     except:

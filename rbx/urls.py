@@ -22,4 +22,8 @@ urlpatterns = patterns('rbx.views',
     url(r'^(?P<username>\w+)/(?P<project>[\w-]+)/edit$', 'edit_project',
         name='edit_project'),
     url(r'^(?P<username>\w+)/(?P<project>[\w-]+)$', 'project', name='project'),
+    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)/star$', 'star_project',
+        name='star_project'),
+    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)/(?P<box>[\w-]+)$', 'box',
+        name='box'),
 )
