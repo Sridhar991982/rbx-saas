@@ -62,6 +62,8 @@ def generate_tex(infile, outfile, template, title, beamer=False):
     if template == REPO + TPL_REPORT:
         call("sed -i ':a;N;$!ba;s/\\n\\n}/}/g' %s" % outfile, shell=True)
         call("sed -i 's/THETITLE/%s/' %s" % (title, outfile), shell=True)
+        call("sed -i 's/includegraphics{/includegraphics\[width=\\\linewidth\]{/' %s" % outfile,
+             shell=True)
     if beamer:
         pass
 
