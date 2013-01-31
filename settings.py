@@ -33,7 +33,7 @@ STATIC_URL = '/static/'
 SECRET_KEY = 'rtu=46ty46r7yq7-o!i*p9l&jj)s%qd^@vs_*g&_7z1-n22$+g'
 
 TEMPLATE_LOADERS = (
-#    'django.template.loaders.filesystem.Loader',
+    #'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 )
 
@@ -72,6 +72,7 @@ INSTALLED_APPS = (
     'markdown_deux',
     'rbx',
     'actstream',
+    'doc',
 )
 
 VIEW_RIGHT = 0

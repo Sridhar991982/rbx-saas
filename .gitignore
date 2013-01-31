@@ -4,3 +4,5 @@ lib/django
 *.pyc
 ~*
 *.swp
+.venv
+rbx-docs
