@@ -23,7 +23,7 @@ def merge_files(directory):
             with open(join(directory, filename)) as infile:
                 for line in infile:
                     outfile.write(line)
-                outfile.write('\\n')
+                outfile.write('\n\n')
     return merged, True
 
 
@@ -61,7 +61,7 @@ def generate_tex(infile, outfile, template, title, beamer=False):
         call("sed -i 's/thesubsection/section/' %s" % outfile, shell=True)
     if template == REPO + TPL_REPORT:
         call("sed -i ':a;N;$!ba;s/\\n\\n}/}/g' %s" % outfile, shell=True)
-        call("sed -i 's/THE_TITLE/%s/' %s" % (title, outfile), shell=True)
+        call("sed -i 's/THETITLE/%s/' %s" % (title, outfile), shell=True)
     if beamer:
         pass
 
