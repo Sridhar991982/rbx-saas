@@ -18,7 +18,7 @@ def deploy(configure=False):
     '''
     clean()
     rsync_project('.', exclude=['.git', 'rbx.db', 'fabfile.py', 'Makefile',
-                    'requirements.txt', 'settings.py'], delete=True)
+                    'requirements.txt', 'settings.py', '.venv', 'rbx-docs'], delete=True)
     with cd(PROJECT_NAME):
         run('ln -fs /usr/local/alwaysdata/python/django/1.4.1/django/' +
             'contrib/admin/static/admin rbx/static')

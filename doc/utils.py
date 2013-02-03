@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import re
 from os.path import basename, isdir, isfile, join, dirname
 from shutil import copy
@@ -42,34 +43,24 @@ def copy_assets(template, destination):
         return True
 
 
-def pull_repo():
-    call('cd %s && git clean -fdx' % REPO, shell=True)
-    call('cd %s && git pull' % REPO, shell=True)
-
-
-def generate_tex(infile, outfile, template, title, beamer=False):
-    with open(infile) as rst, open(outfile, 'w+') as tex:
-        tex.write(publish_file(rst, writer_name='latex',
-            settings_overrides={
-                'template': template,
-                'anchor': False,
-        }))
+def generate_tex(infile, outfile, template, title):
+    with open(infile) as rst:
+        with open(outfile, 'w+') as tex:
+            tex.write(publish_file(rst, writer_name='latex',
+                settings_overrides={
+                    'template': template,
+                    'anchor': False,
+            }))
     # The ugly part, to be refactored
-    if template == REPO + TPL_ARTICLE:
-        call("sed -i ':a;N;$!ba;s/\\n\\n}/}/g' %s" % outfile, shell=True)
-        call("sed -i 's/section/subsection/' %s" % outfile, shell=True)
-        call("sed -i 's/thesubsection/section/' %s" % outfile, shell=True)
+    call("sed -i ':a;N;$!ba;s/\\\\phantomsection%\\n  \\n//g' " + outfile, shell=True)
+    call("sed -i ':a;N;$!ba;s/\\n\\n}/}/g' %s" % outfile, shell=True)
     if template == REPO + TPL_REPORT:
-        call("sed -i ':a;N;$!ba;s/\\n\\n}/}/g' %s" % outfile, shell=True)
         call("sed -i 's/THETITLE/%s/' %s" % (title, outfile), shell=True)
         call("sed -i 's/includegraphics{/includegraphics\[width=\\\linewidth\]{/' %s" % outfile,
              shell=True)
-    if beamer:
-        pass
 
-
-def build_doc(src, template, beamer=False, title=None):
-    pull_repo()
+def build_doc(src, template, request):
+    call('cd %s && git pull' % REPO, shell=True)
     src = REPO + src
     template = REPO + template
     if isfile('%s.rst' % src):
@@ -79,9 +70,9 @@ def build_doc(src, template, beamer=False, title=None):
     copy_assets(template, dirname(infile))
     filename = camelcase2separator('.'.join(
                 basename(infile).split('.')[:-1]))
-    title = title or filename.replace('-', ' ').title()
+    title = request.GET.get('title', None) or filename.replace('-', ' ').title()
     texfile = join(dirname(infile), 'rbx-%s.tex' % filename)
-    generate_tex(infile, texfile, template, title, beamer)
+    generate_tex(infile, texfile, template, title)
     compile_tex(texfile)
     return texfile.replace('.tex', '.pdf')
 
@@ -104,4 +95,5 @@ def render_pdf(path):
     with open(path) as pdf:
         response = HttpResponse(pdf.read(), mimetype='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="%s"' % basename(path)
+        call('cd %s && git clean -fdx' % REPO, shell=True)
         return response
