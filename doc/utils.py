@@ -6,6 +6,7 @@ from os import listdir
 from subprocess import call
 from docutils.core import publish_file
 from django.http import HttpResponse
+from settings import DEBUG
 
 TPL_REPORT = 'template/rbx-report.tex'
 TPL_ARTICLE = 'template/rbx-article.tex'
@@ -16,7 +17,7 @@ REPO = '%s/../rbx-docs/' % dirname(__file__)
 def merge_files(directory):
     if not isdir(directory):
         return directory, False
-    merged = join(directory, '%s.md' % basename(directory))
+    merged = join(directory, '%s.rst' % basename(directory))
     files = listdir(directory)
     files.sort()
     with open(merged, 'w') as outfile:
@@ -58,6 +59,10 @@ def generate_tex(infile, outfile, template, title):
         call("sed -i 's/THETITLE/%s/' %s" % (title, outfile), shell=True)
         call("sed -i 's/includegraphics{/includegraphics\[width=\\\linewidth\]{/' %s" % outfile,
              shell=True)
+    elif template == REPO + TPL_SLIDE:
+        call("sed -ie ':a;N;$!ba;s/%\\n  \\\\label{[a-z-]*}%\\n}\\n%/}/g' " + outfile, shell=True)
+        call("sed -i 's/section{/end\{frame\}\\n\\\\begin\{frame\}\{/g' " + outfile, shell=True)
+
 
 def build_doc(src, template, request):
     call('cd %s && git pull' % REPO, shell=True)
@@ -97,3 +102,13 @@ def render_pdf(path):
         response['Content-Disposition'] = 'attachment; filename="%s"' % basename(path)
         call('cd %s && git clean -fdx' % REPO, shell=True)
         return response
+
+
+def doc_builder(request, fileref, template):
+    try:
+        pdf = build_doc(fileref, template, request)
+        return render_pdf(pdf)
+    except:
+        if DEBUG:
+            raise
+        return HttpResponse('Something wrong happened!')
