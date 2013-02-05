@@ -51,16 +51,16 @@ def generate_tex(infile, outfile, template, title):
                 settings_overrides={
                     'template': template,
                     'anchor': False,
+                    'main_title': title,
             }))
     # The ugly part, to be refactored
     call("sed -i ':a;N;$!ba;s/\\\\phantomsection%\\n  \\n//g' " + outfile, shell=True)
     call("sed -i ':a;N;$!ba;s/\\n\\n}/}/g' %s" % outfile, shell=True)
-    if template == REPO + TPL_REPORT:
-        call("sed -i 's/THETITLE/%s/' %s" % (title, outfile), shell=True)
-        call("sed -i 's/includegraphics{/includegraphics\[width=\\\linewidth\]{/' %s" % outfile,
-             shell=True)
-    elif template == REPO + TPL_SLIDE:
-        call("sed -ie ':a;N;$!ba;s/%\\n  \\\\label{[a-z-]*}%\\n}\\n%/}/g' " + outfile, shell=True)
+    call("sed -i 's/includegraphics{/includegraphics\[width=\\\linewidth\]{/' %s" % outfile,
+            shell=True)
+    call("sed -i 's/THETITLE/%s/' %s" % (title, outfile), shell=True)
+    if template == REPO + TPL_SLIDE:
+        call("sed -ie ':a;N;$!ba;s/%\\n  \\\\label{[a-z0-9-]*}%\\n}\\n%*/}/g' " + outfile, shell=True)
         call("sed -i 's/section{/end\{frame\}\\n\\\\begin\{frame\}\{/g' " + outfile, shell=True)
 
 
@@ -94,13 +94,18 @@ def compile_tex(texfile):
              shell=True)
 
 
+def clean():
+    call('cd %s && git clean -fdx' % REPO, shell=True)
+
+
 def render_pdf(path):
     if not isfile(path):
+        clean()
         return HttpResponse('PDF generation error. Check syntax!')
     with open(path) as pdf:
         response = HttpResponse(pdf.read(), mimetype='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="%s"' % basename(path)
-        call('cd %s && git clean -fdx' % REPO, shell=True)
+        clean()
         return response
 
 
@@ -109,6 +114,7 @@ def doc_builder(request, fileref, template):
         pdf = build_doc(fileref, template, request)
         return render_pdf(pdf)
     except:
+        clean()
         if DEBUG:
             raise
         return HttpResponse('Something wrong happened!')
