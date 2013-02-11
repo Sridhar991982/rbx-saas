@@ -2,22 +2,19 @@ from __future__ import with_statement
 import re
 from os.path import basename, isdir, isfile, join, dirname
 from shutil import copy
-from os import listdir
-from subprocess import call
+from os import listdir, devnull
+from subprocess import check_call
 from docutils.core import publish_file
-from django.http import HttpResponse
-from settings import DEBUG
+from local_settings import REPO, FILE_EXT, OUTPUT_PREFIX, PDFLATEX, GIT
 
-TPL_REPORT = 'template/rbx-report.tex'
-TPL_ARTICLE = 'template/rbx-article.tex'
-TPL_SLIDE = 'template/rbx-slide.tex'
-REPO = '%s/../rbx-docs/' % dirname(__file__)
+
+def run(cmd, cwd=None):
+    with open(devnull, 'w') as tempf:
+        check_call(cmd, shell=True, stdout=tempf, stderr=tempf, cwd=cwd)
 
 
 def merge_files(directory):
-    if not isdir(directory):
-        return directory, False
-    merged = join(directory, '%s.rst' % basename(directory))
+    merged = join(directory, basename(directory) + FILE_EXT)
     files = listdir(directory)
     files.sort()
     with open(merged, 'w') as outfile:
@@ -26,58 +23,56 @@ def merge_files(directory):
                 for line in infile:
                     outfile.write(line)
                 outfile.write('\n\n')
-    return merged, True
+    return merged
 
 
 def copy_assets(template, destination):
-    if not isfile(template) or not isdir(destination):
-        return False
     directory = dirname(template)
-    if destination == directory:
-        return True
-    try:
+    if destination != directory:
         for asset in listdir(directory):
             copy(join(directory, asset), destination)
-    except:
-        return False
-    else:
-        return True
 
 
-def generate_tex(infile, outfile, template, title):
-    with open(infile) as rst:
-        with open(outfile, 'w+') as tex:
-            tex.write(publish_file(rst, writer_name='latex',
-                settings_overrides={
-                    'template': template,
-                    'anchor': False,
-                    'main_title': title,
-            }))
-    # The ugly part, to be refactored
-    call("sed -i ':a;N;$!ba;s/\\\\phantomsection%\\n  \\n//g' " + outfile, shell=True)
-    call("sed -i ':a;N;$!ba;s/\\n\\n}/}/g' %s" % outfile, shell=True)
-    call("sed -i 's/includegraphics{/includegraphics\[width=\\\linewidth\]{/' %s" % outfile,
-            shell=True)
-    call("sed -i 's/THETITLE/%s/' %s" % (title, outfile), shell=True)
-    if template == REPO + TPL_SLIDE:
-        call("sed -ie ':a;N;$!ba;s/%\\n  \\\\label{[a-z0-9-]*}%\\n}\\n%*/}/g' " + outfile, shell=True)
-        call("sed -i 's/section{/end\{frame\}\\n\\\\begin\{frame\}\{/g' " + outfile, shell=True)
+def replace(search, replace, filename):
+    run("sed -i ':a;N;$!ba;s/" + search + "/" + replace + "/g' " + filename)
 
 
-def build_doc(src, template, request):
-    call('cd %s && git pull' % REPO, shell=True)
+def generate_tex(infile, outfile, template, title, beamer):
+    publish_file(source_path=infile,
+                 destination_path=outfile,
+                 writer_name='latex',
+                 settings_overrides={'template': template,
+                                     'anchor': False})
+    replace('\\\\phantomsection%\\n  \\n', '', outfile)
+    replace('\\n\\n}', '}', outfile)
+    replace('includegraphics{', 'includegraphics\[width=\\\\linewidth\]{', outfile)
+    replace('THETITLE', title, outfile)
+    if beamer:
+        replace('%\\n  \\\\label{[a-z0-9-]*}%\\n}\\n%*', '}', outfile)
+        replace('section{', 'end\{frame\}\\n\\\\begin\{frame\}\{', outfile)
+
+
+def build_doc(src, template, beamer, request):
     src = REPO + src
     template = REPO + template
-    if isfile('%s.rst' % src):
-        infile = '%s.rst' % src
+    clean()
+    pull()
+    if isfile(src + FILE_EXT):
+        infile = src + FILE_EXT
+    elif isdir(src):
+        infile = merge_files(src)
     else:
-        infile, _ = merge_files(src)
-    copy_assets(template, dirname(infile))
+        infile = src
+    if not isfile(infile):
+        raise Exception('Input file/directory not found')
+    if not isfile(template):
+        raise Exception('Template does not exists')
     filename = camelcase2separator('.'.join(
-                basename(infile).split('.')[:-1]))
+                    basename(infile).split('.')[:-1]))
     title = request.GET.get('title', None) or filename.replace('-', ' ').title()
-    texfile = join(dirname(infile), 'rbx-%s.tex' % filename)
-    generate_tex(infile, texfile, template, title)
+    texfile = join(dirname(infile), OUTPUT_PREFIX + filename + '.tex')
+    copy_assets(template, dirname(infile))
+    generate_tex(infile, texfile, template, title, beamer)
     compile_tex(texfile)
     return texfile.replace('.tex', '.pdf')
 
@@ -88,33 +83,15 @@ def camelcase2separator(name, separator='-'):
 
 
 def compile_tex(texfile):
+    # Build twice for ToC
     for i in [1, 2]:
-        call('cd %s && pdflatex -bookmarks=true \
-             -halt-on-error %s' % (dirname(texfile), texfile),
-             shell=True)
+        run(PDFLATEX + ' -bookmarks=true -halt-on-error ' + texfile, dirname(texfile))
+
+
+def pull():
+    run(GIT + ' pull -q', REPO)
 
 
 def clean():
-    call('cd %s && git clean -fdx' % REPO, shell=True)
-
-
-def render_pdf(path):
-    if not isfile(path):
-        clean()
-        return HttpResponse('PDF generation error. Check syntax!')
-    with open(path) as pdf:
-        response = HttpResponse(pdf.read(), mimetype='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % basename(path)
-        clean()
-        return response
-
-
-def doc_builder(request, fileref, template):
-    try:
-        pdf = build_doc(fileref, template, request)
-        return render_pdf(pdf)
-    except:
-        clean()
-        if DEBUG:
-            raise
-        return HttpResponse('Something wrong happened!')
+    #run(GIT + ' clean -qfdx', REPO)
+    pass

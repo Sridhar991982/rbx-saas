@@ -1,13 +1,16 @@
-from .utils import doc_builder, TPL_ARTICLE, TPL_REPORT, TPL_SLIDE
+from os.path import basename
+from django.http import HttpResponse
+from .utils import build_doc, clean
 
 
-def article(request, fileref):
-    return doc_builder(request, fileref, TPL_ARTICLE)
-
-
-def report(request, fileref):
-    return doc_builder(request, fileref, TPL_REPORT)
-
-
-def slide(request, fileref):
-    return doc_builder(request, fileref, TPL_SLIDE)
+def docbuilder(request, fileref, template, beamer=False):
+    try:
+        path = build_doc(fileref, template, beamer, request)
+        with open(path) as pdf:
+            response = HttpResponse(pdf.read(), mimetype='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="%s"' % basename(path)
+            clean()
+        return response
+    except Exception, e:
+        clean()
+        return HttpResponse('Something wrong happened!<br />%s' % e)
