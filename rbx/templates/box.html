@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load rbx %}
+
+{% block title %}{% title box %}{% endblock %}
+
+{% block content %}
+<div class="billboard">
+  <div class="container">
+    <h1 class="collapse-bottom">
+      {{ box }}
+      {% if box.project|is_editable:user.get_profile %}
+      <a href="{{ box.edit_link }}"
+         title="Edit box" class="space-left undecorated modal-fragment"
+         data-target="#edit-modal" rel="tooltip">
+      <i class="icon-pencil icon-small"></i> <span class="tiny hidden-desktop">Edit box</span></a>
+      {% endif %}
+    </h1>
+    <div class="row-fluid">
+      <div class="span7">
+        <ul class="unstyled space-top">
+          <li><i class="icon-{{ box.project.co_authors|pluralize:"user,group" }}"></i> By
+            {% for author in box.project.co_authors %}
+              {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          </li>
+          <li><i class="icon-link"></i> <a href="{{ box.project.link }}">{{ box.project }}</a></li>
+          <li><i class="icon-time"></i> 
+          {% if box.run_set.latest %}
+          Last run {{ box.run_set.lastest.start_datetime|timesince }} ago
+          {% else %}
+          No run yet
+          {% endif %}
+          </li>
+        </ul>
+      </div>
+      <div class="span5">
+        <ul class="stats unstyled">
+          <li>
+            <i class="icon-cogs"></i>
+            <strong>{{ box.run_set.values|length }}</strong>
+            <span>run{{ box.runs|pluralize }}</span>
+          </li>
+          <li>
+            <i class="icon-time"></i>
+            <strong>{{ box.run_set.latest.start_datetime|timeuntil:box.run_set.latest.end_datetime }}</strong>
+            <span>long</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    {% if box.description %}
+    <p>{{ box.description }}</p⎋>
+    {% endif %}
+  </div>
+</div>
+<div class="container space-top">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#launch"><i class="icon-beaker"></i>  Launch</a></li>
+        <li><a href="#pending"><i class="icon-cogs"></i> Pending</a></li>
+        <li><a href="#complete"><i class="icon-file"></i> Complete</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="launch">
+        </div>
+        <div class="tab-pane" id="pending">
+        </div>
+        <div class="tab-pane" id="complete">
+        </div>
+  </div>
+</div>
+
+<div id="edit-modal" class="modal hide fade" tabindex="-1" role="dialog"
+      aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="editModalLabel">Edit box</h3>
+  </div>
+  <div class="modal-body">
+  <p class="loading">Loading content...</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button class="btn btn-primary submit-change">Save changes</button>
+  </div>
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT
 
@@ -67,6 +68,15 @@ class Project(models.Model):
             return False
         return authorized.type >= type
 
+    def link(self):
+        return reverse('project', args=[self.owner.user.username, self.slug])
+
+    def edit_link(self):
+        return reverse('edit_project', args=[self.owner.user.username, self.slug])
+
+    def star_link(self):
+        return reverse('star_project', args=[self.owner.user.username, self.slug])
+
     class Meta:
         unique_together = ('owner', 'slug')
 
@@ -91,22 +101,31 @@ class OperatingSystem(models.Model):
 
 class Box(models.Model):
     project = models.ForeignKey(Project, db_index=True)
-    name = models.SlugField(max_length=30)
+    name = models.SlugField(max_length=30, db_index=True)
     description = models.TextField(blank=True)
-    source = models.CharField(max_length=255)
-    source_type = models.CharField(choices=EXECUTOR_SOURCE_TYPE, max_length=20)
+    source_repository = models.CharField(max_length=255)
+    repository_type = models.CharField(choices=EXECUTOR_SOURCE_TYPE, max_length=20)
     os = models.ForeignKey(OperatingSystem)
-    install = models.CharField(max_length=255, blank=True)
-    script = models.CharField(max_length=255)
-    after_script = models.CharField(max_length=255, blank=True)
-    after_failure = models.CharField(max_length=255, blank=True)
-    after_success = models.CharField(max_length=255, blank=True)
-    lifetime = models.PositiveSmallIntegerField(default=8)
+    before_run = models.CharField(max_length=255, blank=True)
+    run_command = models.CharField(max_length=255)
+    after_run = models.CharField(max_length=255, blank=True)
+    lifetime = models.PositiveSmallIntegerField(default=3)
 
     def __unicode__(self):
         return '%s\'s %s box' % (self.project.name, self.name)
 
+    def link(self):
+        return reverse('box', args=[self.project.owner.user.username,
+                                    self.project.slug,
+                                    self.name])
+
+    def edit_link(self):
+        return reverse('edit_box', args=[self.project.owner.user.username,
+                                    self.project.slug,
+                                    self.name])
+
     class Meta:
+        unique_together = ('project', 'name')
         verbose_name_plural = 'boxes'
 
 
@@ -130,6 +149,9 @@ class Run(models.Model):
 
     def __unicode__(self):
         return '%s\'s run #%d' % (self.box.project.name, self.id)
+
+    class Meta:
+        get_latest_by = 'start_datetime'
 
 
 class RunParam(models.Model):

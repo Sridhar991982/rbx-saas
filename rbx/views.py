@@ -117,23 +117,25 @@ def project(request, username, project):
         project.boxes.annotate(nb_runs=Count('run'))
 
         if request.method == 'POST':
-            box_form = BoxForm(request.POST, project=project,
-                                initial={'project': project})
+            box_form = BoxForm(request.POST, project=project, form_class='well',
+                                initial={'project': project}, action=project.link())
             if box_form.is_valid():
                 try:
                     box_form.save()
                     messages.success(request, '%s box successfully saved'
                             % box_form.cleaned_data['name'].title())
+                    return HttpResponseRedirect(reverse('box',
+                         args=(project.owner.user.username,
+                               project.slug, box_form.cleaned_data['name'])))
                 except Exception:
                     messages.error(request, 'Oops, something wrong happened,' +
                                             ' please try again...')
-                finally:
                     return HttpResponseRedirect(reverse('project',
                          args=(project.owner.user.username,
                                project.slug)))
         else:
-            box_form = BoxForm(project=project,
-                                initial={'project': project})
+            box_form = BoxForm(project=project, form_class='well',
+                                initial={'project': project}, action=project.link())
     except Project.DoesNotExist:
         raise Http404
     return render(request, 'project.html', {
@@ -154,9 +156,6 @@ def edit_project(request, username, project):
         raise Http404
     if not project.is_allowed(request.user.get_profile(), EDIT_RIGHT):
         raise Http404
-    project.co_authors = [project.owner]
-    project.co_authors.extend([r.user for r in ProjectRight.objects.filter(
-                                project=project, type__gte=EDIT_RIGHT)])
     if request.method == 'POST':
         form = EditProjectForm(request.POST, instance=project)
         if form.is_valid():
@@ -197,4 +196,51 @@ def star_project(request, username, project):
 
 
 def box(request, username, project, box):
-    pass
+    try:
+        project = Project.objects.get(
+                owner=User.objects.get(username=username).get_profile(),
+                slug=project
+        )
+        box = Box.objects.get(project=project, name=box)
+        box.project.co_authors = [project.owner]
+        box.project.co_authors.extend([r.user for r in ProjectRight.objects.filter(
+                                        project=project, type__gte=EDIT_RIGHT)])
+    except Project.DoesNotExist:
+        raise Http404
+    except Box.DoesNotExist:
+        raise Http404
+    return render(request, 'box.html', {
+        'box': box,
+    })
+
+def edit_box(request, username, project, box):
+    status = 'edit'
+    try:
+        project = Project.objects.get(
+            owner=User.objects.get(username=username).get_profile(),
+            slug=project
+        )
+        box = Box.objects.get(project=project, name=box)
+    except Project.DoesNotExist:
+        raise Http404
+    except Box.DoesNotExist:
+        raise Http404
+    if not project.is_allowed(request.user.get_profile(), EDIT_RIGHT):
+        raise Http404
+    if request.method == 'POST':
+        form = BoxForm(request.POST, instance=box, action=box.edit_link(),
+                       project=project, initial={'project': project})
+        if form.is_valid():
+            try:
+                form.save()
+                status = 'saved'
+            except Exception:
+                status = 'error'
+    else:
+        form = BoxForm(instance=box, project=project, action=box.edit_link(),
+                        initial={'project': project})
+    return render(request, 'edit_box.html', {
+        'box': box,
+        'edit_form': form,
+        'status': status,
+    })

@@ -6,6 +6,18 @@ settings_urls = patterns('rbx.views',
     url(r'^create-team$', 'home', name='settings_create_team'),
 )
 
+box_urls = patterns('rbx.views',
+    url(r'^$', 'box', name='box'),
+    url(r'^/edit$', 'edit_box', name='edit_box'),
+)
+
+projects_urls = patterns('rbx.views',
+    url(r'^$', 'project', name='project'),
+    url(r'^/edit$', 'edit_project', name='edit_project'),
+    url(r'^/star$', 'star_project', name='star_project'),
+    url(r'^/(?P<box>[\w-]+)', include(box_urls)),
+)
+
 urlpatterns = patterns('rbx.views',
     url(r'^$', 'home_or_dashboard', name='home'),
     url(r'^home$', 'home'),
@@ -19,11 +31,5 @@ urlpatterns = patterns('rbx.views',
     url(r'^new$', 'new_project', name='new_project'),
     url(r'^settings/', include(settings_urls)),
     url(r'^(?P<username>\w+)$', 'profile', name='profile'),
-    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)/edit$', 'edit_project',
-        name='edit_project'),
-    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)$', 'project', name='project'),
-    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)/star$', 'star_project',
-        name='star_project'),
-    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)/(?P<box>[\w-]+)$', 'box',
-        name='box'),
+    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)', include(projects_urls)),
 )

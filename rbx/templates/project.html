@@ -15,7 +15,7 @@
       <i class="icon-{% if project.public %}un{% endif %}lock"></i>
       {{ project.name }}
       {% if project|is_editable:user.get_profile %}
-      <a href="{% url "edit_project" project.owner.user.username project.slug %}"
+      <a href="{{ project.edit_link }}"
          title="Edit project" class="space-left undecorated modal-fragment"
          data-target="#edit-modal" rel="tooltip">
       <i class="icon-pencil icon-small"></i> <span class="tiny hidden-desktop">Edit project</span></a>
@@ -25,7 +25,7 @@
       <div class="span7">
         <div class="btn-group">
           <button class="btn"><i class="icon-cog"></i> Run now</button>
-          <a class="btn" href="{% url "star_project" project.owner.user.username project.slug %}">
+          <a class="btn" href="{{ project.star_link }}">
             <i class="icon-star"></i>
             {% if user|is_following:project %}Unstar
             {% else %}Star{% endif %}
@@ -82,7 +82,7 @@
         <div class="tab-pane" id="boxes">
           <div class="box-list">
             {% for box in project.boxes %}
-            <h3><a href="{% url "box" project.owner.user.username project.slug box.name %}">
+            <h3><a href="{{ box.link }}">
                 {{ box.name }} box</a></h3>
             <div class="row-fluid space-bottom">
               <div class="span3">

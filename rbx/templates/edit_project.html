@@ -14,7 +14,7 @@
       {% include "alert-saved.html" %}
     {% endif %}
 
-    <form action="{% url "edit_project" project.owner.user.username project.slug %}" method="post">
+    <form action="{{ project.edit_link }}" method="post">
       {% csrf_token %}
       <div class="control-group {% if edit_form.name.errors %}error{% endif %}">
         {{ edit_form.name }}

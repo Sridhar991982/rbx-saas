@@ -1,21 +1,21 @@
 var RBX = (function () {
 
     var _init = function () {
-    	_tooltips()
-    	_dissmissSiteAlert()
+        _tooltips()
+        _dissmissSiteAlert()
 
-    	_modalFragment()
-    	_submitModalChanges()
+        _modalFragment()
+        _submitModalChanges()
 
-    	_selectToDropdown()
-    	_newBoxForm()
+        _selectToDropdown()
+        _newBoxForm()
 
         _navTabs()
-    	_activateTabFromHash()
+        _activateTabFromHash()
     }
 
     var _tooltips = function () {
-    	$(window).on('resize', function () {
+        $(window).on('resize', function () {
             if (!window.matchMedia || (window.matchMedia('(min-width: 979px)').matches))
                 $('a[rel="tooltip"]').tooltip({placement: 'bottom'})
             else
@@ -31,27 +31,35 @@ var RBX = (function () {
 
     var _modalFragment = function () {
         $('.modal-fragment').on('click', function() {
-        	var target = $(this).attr('data-target');
+            var target = $(this).attr('data-target')
             $(target).modal({keyboard: false})
             $(target + ' .modal-body').load($(this).attr('href') + ' #fragment')
+            setTimeout(_populateReloadLocation, 600)
             return false;
         })
     }
 
     var _submitModalChanges = function () {
-        $('.submit-change').on('click', function () {
-        	var modal = $(this).parent().parent(),
+        var action = function () {
+            var modal = $(this).parent().parent(),
                 form = modal.find('form')
             modal.find('.modal-body').load(form.attr('action') + ' #fragment',
                 form.serializeArray(), function () {
                 modal.find('button.btn[data-dismiss="modal"]').text('Close')
                 modal.on('hidden', function () {
-                	modal.off('hidden')
-                	location.reload()
+                    modal.off('hidden')
+                    if (modal.find('input[name=reload-location]').val()) {
+                        console.log('Redirecting')
+                        location.href = modal.find('input[name=reload-location]').val()
+                    } else {
+                        console.log('Reloading')
+                        location.reload()
+                    }
                 })
             })
             return false;
-        })
+        }
+        $('.submit-change').on('submit', action).on('click', action)
     }
 
     var _selectToDropdown = function () {
@@ -108,6 +116,20 @@ var RBX = (function () {
             $('#div_id_source_type').remove()
             _selectToDropdown()
         })
+    }
+
+    var _populateReloadLocation = function () {
+        var attrName = 'data-reload-populate'
+        var reloadField = $('input['+attrName+']')
+        if (reloadField.length) {
+            var fieldName = reloadField.attr(attrName)
+            var watchedField = reloadField.parent().find('[name='+fieldName+']')
+            var initialValue = watchedField.val()
+            watchedField.on('change', function () {
+                var value = location.href.replace(initialValue, $(this).val())
+                reloadField.attr('value', value)
+            })
+        }
     }
 
     return {

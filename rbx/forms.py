@@ -99,12 +99,14 @@ class BoxForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         project = kwargs.pop('project')
+        action = kwargs.pop('action')
+        form_class = 'form_class' in kwargs and kwargs.pop('form_class') or ''
         super(BoxForm, self).__init__(*args, **kwargs)
 
         self.fields['project'] = forms.ModelChoiceField(Project.objects,
                                     widget=forms.HiddenInput(),
                                     initial=project)
-        self.fields['source_type'] = forms.ChoiceField(
+        self.fields['repository_type'] = forms.ChoiceField(
                                             choices=EXECUTOR_SOURCE_TYPE)
         self.fields['os'] = forms.ModelChoiceField(OperatingSystem.objects,
                                                    empty_label=None,
@@ -114,11 +116,12 @@ class BoxForm(forms.ModelForm):
                                     initial=3,
                                     help_text='minute(s)',
                                     label='Max run time')
+        self.fields['reload-location'] = forms.CharField(max_length=120, required=False,
+                                                        widget=forms.HiddenInput())
 
         self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal well'
-        self.form_action = reverse('project',
-            args=(project.owner.user.username, project.slug))
+        self.helper.form_class = 'form-horizontal ' + form_class
+        self.helper.form_action = action
         self.helper.html5_required = True
         self.helper.help_text_inline = True
         self.helper.layout = Layout(
@@ -127,24 +130,23 @@ class BoxForm(forms.ModelForm):
             Field('description', css_class='input-block-level'),
             Field('lifetime', css_class='input-mini'),
             Div(
-                'source_type',
-                'source',
+                'repository_type',
+                'source_repository',
                 css_class='input-append input-xlarge'
             ),
             Field('os', css_class='input-block-level'),
-            Field('install', css_class='input-block-level'),
-            Field('script', css_class='input-block-level'),
-            Field('after_script', css_class='input-block-level'),
-            Field('after_failure', css_class='input-block-level'),
-            Field('after_success', css_class='input-block-level'),
+            Field('before_run', css_class='input-block-level'),
+            Field('run_command', css_class='input-block-level'),
+            Field('after_run', css_class='input-block-level'),
             Div(
                 Div(
-                    Submit('save_box', 'Save box',
+                    Submit('save_box', 'Save box and add parameters',
                             css_class="btn-primary"),
-                    css_class='controls',
+                    css_class='controls unfragmented',
                 ),
                 css_class='controls-group',
             ),
+            Field('reload-location', data_reload_populate='name'),
         )
 
     class Meta:

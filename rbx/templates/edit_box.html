@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit {{ box }}{% endblock %}
+
+{% block content %}
+<div class="container space-top">
+  <div id="fragment">
+    {% if status == "error" %}
+      {% include "alert-error.html" %}
+    {% elif not form.errors and status == "saved" %}
+      {% include "alert-saved.html" %}
+    {% endif %}
+
+    {% crispy edit_form %}
+  </div>
+</div>
+{% endblock %}
