@@ -42,7 +42,7 @@ class RunParamInline(admin.TabularInline):
 class RunAdmin(admin.ModelAdmin):
     model = Run
     inlines = (RunParamInline,)
-    list_filter = ('start_datetime',)
+    list_filter = ('started',)
 
 
 class InvitationAdmin(admin.ModelAdmin):

@@ -1,7 +1,9 @@
+from datetime import datetime
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT
+from actstream.models import followers, target_stream
 
 
 PROJECT_RIGHT = (
@@ -22,9 +24,13 @@ EXECUTOR_PARAM_TYPE = (
     ('int', 'Integer'),
 )
 
-BUILD_STATUS = (
-    ('success', 'Success'),
-    ('failed', 'Failed'),
+RUN_STATUS = (
+    (1, 'Pending'),
+    (2, 'Aborted'),
+    (3, 'Running'),
+    (4, 'Cancelled'),
+    (5, 'Succeed'),
+    (6, 'Failed'),
 )
 
 
@@ -77,6 +83,19 @@ class Project(models.Model):
     def star_link(self):
         return reverse('star_project', args=[self.owner.user.username, self.slug])
 
+    def authors(self):
+        authors = [self.owner]
+        authors.extend([r.user for r in
+                        ProjectRight.objects.filter(project=self,
+                                                    type__gte=EDIT_RIGHT)])
+        return authors
+
+    def stargazers(self):
+        return followers(self)
+
+    def activity(self):
+        return target_stream(self)
+
     class Meta:
         unique_together = ('owner', 'slug')
 
@@ -121,8 +140,8 @@ class Box(models.Model):
 
     def edit_link(self):
         return reverse('edit_box', args=[self.project.owner.user.username,
-                                    self.project.slug,
-                                    self.name])
+                                         self.project.slug,
+                                         self.name])
 
     class Meta:
         unique_together = ('project', 'name')
@@ -144,14 +163,30 @@ class BoxParam(models.Model):
 class Run(models.Model):
     box = models.ForeignKey(Box)
     user = models.ForeignKey(UserProfile)
-    start_datetime = models.DateTimeField(auto_now_add=True)
-    end_datetime = models.DateTimeField()
+    launched = models.DateTimeField(auto_now_add=True)
+    started = models.DateTimeField()
+    duration = models.PositiveSmallIntegerField()
+    status = models.PositiveSmallIntegerField(choices=RUN_STATUS)
 
     def __unicode__(self):
         return '%s\'s run #%d' % (self.box.project.name, self.id)
 
+    def get_status_id(self, name):
+        for idx, status in RUN_STATUS:
+            if status.lower() == name.lower():
+                return idx
+        raise Exception('Status name not found')
+
+    def set_status(self, name):
+        idx = self.get_status_id(name)
+        self.status = idx
+        if idx == 3:
+            self.started = datetime.now()
+        elif idx > 3:
+            self.duration = datetime.now() - self.started
+
     class Meta:
-        get_latest_by = 'start_datetime'
+        get_latest_by = 'launched'
 
 
 class RunParam(models.Model):
