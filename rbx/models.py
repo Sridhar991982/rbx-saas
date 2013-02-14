@@ -74,8 +74,9 @@ class Project(models.Model):
             return False
         return authorized.type >= type
 
-    def link(self):
-        return reverse('project', args=[self.owner.user.username, self.slug])
+    def link(self, anchor=None):
+        anchor = anchor and '#/' + anchor or ''
+        return reverse('project', args=[self.owner.user.username, self.slug]) + anchor
 
     def edit_link(self):
         return reverse('edit_project', args=[self.owner.user.username, self.slug])
@@ -133,10 +134,11 @@ class Box(models.Model):
     def __unicode__(self):
         return '%s\'s %s box' % (self.project.name, self.name)
 
-    def link(self):
+    def link(self, anchor=None):
+        anchor = anchor and '#/' + anchor or ''
         return reverse('box', args=[self.project.owner.user.username,
                                     self.project.slug,
-                                    self.name])
+                                    self.name]) + anchor
 
     def edit_link(self):
         return reverse('edit_box', args=[self.project.owner.user.username,

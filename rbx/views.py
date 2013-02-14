@@ -127,7 +127,7 @@ def project(request, username, project):
                             project.slug)))
     else:
         box_form = BoxForm(project=project, form_class='well',
-                            initial={'project': project}, action=project.link())
+                            initial={'project': project}, action=project.link('boxes'))
     return render(request, 'project.html', {
         'project': project,
         'box_error': request.method == 'POST',
