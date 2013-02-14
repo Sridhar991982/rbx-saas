@@ -33,7 +33,7 @@
         </div>
         <ul class="unstyled space-top">
           <li><i class="icon-{{ project.co_authors|pluralize:"user,group" }}"></i> By
-            {% for author in project.co_authors %}
+            {% for author in project.authors %}
               {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
             {% endfor %}
           </li>
@@ -131,18 +131,18 @@
           {% endfor %}
         </div>
         <div class="tab-pane" id="activity">
-          {% for event in project.activity %}
+          {# for event in project.activity %}
           <div class="stream">
             <p class="pull-left space-right">
             {% gravatar event.actor.gravatar 32 %}
             </p>
             <p class="no-margin">
-            {{ event.actor|profile_url:event.actor.user.username }}
+            {# event.actor|profile_url:event.actor.user.username }}
             {{ event.verb }} {{ event.target }}
             <small>{{ event.timesince }} ago</small>
             </p>
           </div>
-          {% endfor %}
+          {% endfor #}
         </div>
       </div>
     </div>
