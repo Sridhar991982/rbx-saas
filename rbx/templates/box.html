@@ -20,7 +20,7 @@
       <div class="span7">
         <ul class="unstyled space-top">
           <li><i class="icon-{{ box.project.co_authors|pluralize:"user,group" }}"></i> By
-            {% for author in box.project.co_authors %}
+            {% for author in box.project.authors %}
               {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
             {% endfor %}
           </li>
