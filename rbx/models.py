@@ -169,6 +169,8 @@ class Run(models.Model):
     started = models.DateTimeField()
     duration = models.PositiveSmallIntegerField()
     status = models.PositiveSmallIntegerField(choices=RUN_STATUS)
+    secret_key = models.CharField(max_length=36)
+    ip_address = models.GenericIPAddressField()
 
     def __unicode__(self):
         return '%s\'s run #%d' % (self.box.project.name, self.id)

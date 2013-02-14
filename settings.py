@@ -73,8 +73,12 @@ INSTALLED_APPS = (
     'rbx',
     'actstream',
     'doc',
+    'cloud',
 )
 
 VIEW_RIGHT = 0
 EDIT_RIGHT = 1
 ADMIN_RIGHT = 2
+
+CLOUD_AUTH = 'jexhson:stratusBldy1'
+CLOUD_ENDPOINT = 'https://%s@cloud.lal.stratuslab.eu:2634/xmlrpc' % CLOUD_AUTH
