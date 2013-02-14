@@ -43,8 +43,8 @@
           </li>
           <li>
             <i class="icon-time"></i>
-            <strong>{{ box.run_set.latest.start_datetime|timeuntil:box.run_set.latest.end_datetime }}</strong>
-            <span>long</span>
+            {{ box.run_set.latest.start_datetime|timeuntil:box.run_set.latest.end_datetime }}
+            long
           </li>
         </ul>
       </div>
