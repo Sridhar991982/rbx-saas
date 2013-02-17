@@ -2,9 +2,11 @@ from datetime import datetime
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT
+from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
+    CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY
 from actstream.models import followers, target_stream
-
+import xmlrpclib
+import xml.etree.cElementTree as etree
 
 PROJECT_RIGHT = (
     (VIEW_RIGHT, 'View'),
@@ -15,7 +17,7 @@ PROJECT_RIGHT = (
 EXECUTOR_SOURCE_TYPE = (
     ('git', 'Git'),
     ('hg', 'Mercurial'),
-    ('svn', 'Subversion'),
+    ('git svn', 'Subversion'),
 )
 
 EXECUTOR_PARAM_TYPE = (
@@ -25,6 +27,7 @@ EXECUTOR_PARAM_TYPE = (
 )
 
 RUN_STATUS = (
+    (0, 'Error'),
     (1, 'Pending'),
     (2, 'Aborted'),
     (3, 'Running'),
@@ -32,6 +35,36 @@ RUN_STATUS = (
     (5, 'Succeed'),
     (6, 'Failed'),
 )
+
+VM_TEMPLATE = '''
+CPU = 1
+VCPU = 1
+MEMORY = 2048
+RANK = "- RUNNING_VMS"
+DISK = [
+source   = "%(image)s",
+target   = "hda",
+save     = no,
+readonly = "no",
+driver = "raw"
+]
+DISK = [
+type     = swap,
+size     = 2048,
+target   = "hdb",
+readonly = "no"
+]
+NIC = [ network_uname=oneadmin,network = "public" ]
+GRAPHICS = [
+port = "-1",
+type = "vnc"
+]
+CONTEXT = [
+public_key = "%(ssh_key)s",
+%(params)s
+target = "hdd"
+]
+'''
 
 
 class UserProfile(models.Model):
@@ -166,14 +199,20 @@ class Run(models.Model):
     box = models.ForeignKey(Box)
     user = models.ForeignKey(UserProfile)
     launched = models.DateTimeField(auto_now_add=True)
-    started = models.DateTimeField()
-    duration = models.PositiveSmallIntegerField()
-    status = models.PositiveSmallIntegerField(choices=RUN_STATUS)
+    started = models.DateTimeField(null=True)
+    duration = models.PositiveSmallIntegerField(null=True)
+    status = models.PositiveSmallIntegerField(choices=RUN_STATUS, default=1)
     secret_key = models.CharField(max_length=36)
-    ip_address = models.GenericIPAddressField()
+    vm_id = models.PositiveSmallIntegerField(null=True)
 
     def __unicode__(self):
         return '%s\'s run #%d' % (self.box.project.name, self.id)
+
+    @property
+    def rpc(self):
+        if not hasattr(self, '_rpc'):
+            self._rpc = xmlrpclib.ServerProxy(CLOUD_ENDPOINT)
+        return self._rpc
 
     def get_status_id(self, name):
         for idx, status in RUN_STATUS:
@@ -188,6 +227,48 @@ class Run(models.Model):
             self.started = datetime.now()
         elif idx > 3:
             self.duration = datetime.now() - self.started
+
+    def start(self):
+        # XXX: Check if user is not over quota
+        success, vm_id, _ = self.rpc.one.vm.allocate(
+            CLOUD_AUTH,
+            VM_TEMPLATE % {'image': self.box.os.identifier,
+                           'ssh_key': PUBLIC_KEY,
+                           'params': self.box_context_params() + self.run_context_params()})
+        self.vm_id = vm_id
+        if not success:
+            self.status = 0
+        self.save()
+        if not success:
+            raise Exception()
+
+    def box_context_params(self):
+        params = 'rbx_clone="%s clone %s %s",\n' % (self.box.repository_type,
+                                           self.box.source_repository,
+                                           self.box.name)
+        params += 'rbx_box_name="%s",\n' % self.box.name
+        params += 'rbx_before_run="%s",\n' % self.box.before_run
+        params += 'rbx_run_cmd="%s",\n' % self.box.run_command
+        params += 'rbx_after_run="%s",\n' % self.box.after_run
+        return params
+
+    def run_context_params(self):
+        return ''
+
+    def stop(self, reason):
+        self.rpc.one.vm.action(CLOUD_AUTH, 'finalize', self.vm_id)
+        self.status = reason
+
+    def state(self):
+        info = self._info(self.vm_id)
+        # TODO: Parse XML state
+
+    def ip(self):
+        return self._info(self.vm_id).find('TEMPLATE/NIC').find('IP').text
+
+    def _info(self, xml=True):
+        success, info, _ = self.rpc.one.vm.info(CLOUD_AUTH, self.vm_id)
+        return xml and etree.fromstring(info.encode('utf-8')) or info
 
     class Meta:
         get_latest_by = 'launched'

@@ -3,7 +3,7 @@ from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Field, Submit, Div
+from crispy_forms.layout import Layout, Field, Submit, Div, HTML
 
 from rbx.models import UserProfile, Project, Invitation, Box, \
     OperatingSystem, EXECUTOR_SOURCE_TYPE
@@ -151,3 +151,14 @@ class BoxForm(forms.ModelForm):
 
     class Meta:
         model = Box
+
+class RunForm(forms.Form):
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.html5_required = True
+    helper.help_text_inline = True
+    helper.layout = Layout(
+        HTML('<p><small>No parameters available.</small></p>'),
+        Submit('run_project', 'Run project', css_class='btn-primary')
+    )

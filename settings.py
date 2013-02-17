@@ -73,7 +73,6 @@ INSTALLED_APPS = (
     'rbx',
     'actstream',
     'doc',
-    'cloud',
 )
 
 VIEW_RIGHT = 0
@@ -81,4 +80,5 @@ EDIT_RIGHT = 1
 ADMIN_RIGHT = 2
 
 CLOUD_AUTH = 'jexhson:stratusBldy1'
-CLOUD_ENDPOINT = 'https://%s@cloud.lal.stratuslab.eu:2634/xmlrpc' % CLOUD_AUTH
+CLOUD_ENDPOINT = 'https://%s@cloud.lal.stratuslab.eu:2634/pswd/xmlrpc' % CLOUD_AUTH
+PUBLIC_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPD3/cMQtrfIN9z180vj7wh2chyrgH1qjBn6VrxZ/7s1a7lxRbb8e+ghpisg+wn63qQ8EbQ+6lAqO2sNvfBzTwRik51zvwlAzIGStSJAXex9IM6txpaQQl2MmAn6zRC7mvXgrPfE8Ey3TZkCHUBFjG2bjv9Qaa6udEmZd2bwD0N/X+h3QyeMfdrINRFlHKoCoEn5w0k1VtLzllSL/ovJLfGpyhSmx7W7JHtbOIW0GGLFwpHubb38quboHqtzWyGTFxVCxZSoC+XI/sli1XSsqPIuuFLqgVCtE112ESkNKb39i8AZL7+gh102B34UnSl05PJHJNb0Yv3Xq77FDRu8Ct'

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load url from future %}
+{% load crispy_forms_tags %}
 {% load rbx %}
 
 {% block title %}{% title box %}{% endblock %}
@@ -27,7 +28,7 @@
           <li><i class="icon-link"></i> <a href="{{ box.project.link }}">{{ box.project }}</a></li>
           <li><i class="icon-time"></i> 
           {% if box.run_set.latest %}
-          Last run {{ box.run_set.lastest.start_datetime|timesince }} ago
+          Last run {{ box.run_set.lastest.started|timesince }} ago
           {% else %}
           No run yet
           {% endif %}
@@ -43,7 +44,7 @@
           </li>
           <li>
             <i class="icon-time"></i>
-            {{ box.run_set.latest.start_datetime|timeuntil:box.run_set.latest.end_datetime }}
+            {{ box.run_set.latest.duration }}
             long
           </li>
         </ul>
@@ -62,10 +63,7 @@
     </ul>
     <div class="tab-content">
         <div class="tab-pane active" id="launch">
-            <form>
-                <p><small>No parameters available.</small></p>
-                <button class="btn btn-primary">Run project</button>
-            </form>
+            {% crispy launch %}
         </div>
         <div class="tab-pane" id="pending">
         </div>

@@ -5,15 +5,15 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import slugify
-from django.db.models import Avg, Count
-from actstream.models import user_stream, actor_stream, followers, following, \
-    target_stream
-from actstream.actions import follow, unfollow, is_following
+from django.db.models import Count
+from actstream.models import followers, following
+from actstream.actions import is_following, follow, unfollow
+from uuid import uuid4
 
 from settings import EDIT_RIGHT
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
-    BoxForm
-from rbx.models import Project, UserProfile, ProjectRight, Box, Run
+    BoxForm, RunForm
+from rbx.models import Project, UserProfile, Box, Run
 
 
 def home_or_dashboard(request):
@@ -42,9 +42,8 @@ def home(request):
 
 @login_required
 def dashboard(request):
-    stream = None #user_stream(request.user.get_profile())
-    projects = Project.objects.filter(
-                owner=request.user.get_profile).order_by('-created')
+    stream = None  # user_stream(request.user.get_profile())
+    projects = Project.objects.filter(owner=request.user.get_profile).order_by('-created')
     return render(request, 'dashboard.html', {
         'stream': stream,
         'projects': projects,
@@ -54,7 +53,7 @@ def dashboard(request):
 def profile(request, username):
     try:
         user = User.objects.get(username=username)
-        stream = None #actor_stream(user.get_profile())
+        stream = None  # actor_stream(user.get_profile())
         projects = Project.objects.filter(owner=user).order_by('-created')
         user = user.get_profile()
         user.nb_followers = len(followers(user))
@@ -103,22 +102,19 @@ def project(request, username, project):
         raise Http404
     project.boxes = Box.objects.filter(project=project)
     project.all_runs = Run.objects.filter(box__in=project.boxes)
-    project.user_runs = project.all_runs.filter(
-                            user=request.user.get_profile())
-
+    project.user_runs = project.all_runs.filter(user=request.user.get_profile())
     project.boxes.annotate(nb_runs=Count('run'))
-
     if request.method == 'POST':
         box_form = BoxForm(request.POST, project=project, form_class='well',
-                            initial={'project': project}, action=project.link())
+                           initial={'project': project}, action=project.link())
         if box_form.is_valid():
             try:
                 box_form.save()
                 messages.success(request, '%s box successfully saved'
-                        % box_form.cleaned_data['name'].title())
+                                 % box_form.cleaned_data['name'].title())
                 return HttpResponseRedirect(reverse('box',
                         args=(project.owner.user.username,
-                            project.slug, box_form.cleaned_data['name'])))
+                              project.slug, box_form.cleaned_data['name'])))
             except Exception:
                 messages.error(request, 'Oops, something wrong happened,' +
                                         ' please try again...')
@@ -133,6 +129,7 @@ def project(request, username, project):
         'box_error': request.method == 'POST',
         'box_form': box_form,
     })
+
 
 @login_required
 def edit_project(request, username, project):
@@ -184,9 +181,25 @@ def box(request, username, project, box):
     owner = User.objects.get(username=username).get_profile()
     project = get_object_or_404(Project, owner=owner, slug=project)
     box = get_object_or_404(Box, project=project, name=box)
+    if request.method == 'POST':
+        launch = RunForm(request.POST)
+        if launch.is_valid():
+            try:
+                run = Run(box=box, user=request.user.get_profile(),
+                          status=1, secret_key=str(uuid4()))
+                run.save()
+                run.start()
+            except Exception:
+                raise
+                messages.error(request, 'Oops, something wrong happened, ' +
+                                        'please try again...')
+    else:
+        launch = RunForm()
     return render(request, 'box.html', {
         'box': box,
+        'launch': launch,
     })
+
 
 @login_required
 def edit_box(request, username, project, box):
