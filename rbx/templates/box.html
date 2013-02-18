@@ -42,11 +42,13 @@
             <strong>{{ box.run_set.values|length }}</strong>
             <span>run{{ box.run_set.values|pluralize }}</span>
           </li>
+          {% if box.avg_duration %}
           <li>
             <i class="icon-time"></i>
             Avg. {{ box.avg_duration|elapsed }}
             long
           </li>
+          {% endif %}
         </ul>
       </div>
     </div>

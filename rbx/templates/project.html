@@ -87,7 +87,9 @@
             <div class="row-fluid space-bottom">
               <div class="span3">
                 {{ box.run_set.values|length }} run{{ box.run_set.values|pluralize }}<br />
+                {% if box.avg_duration %}
                 Avg. {{ box.avg_duration|elapsed }}
+                {% endif %}
               </div>
               <div class="span9">
                 <p>
@@ -112,7 +114,7 @@
             {% endif %}
           </div>
           {% if project|is_editable:user.get_profile and not box_error %}
-          <button class="btn btn-primary new_box">Add a new box</button>
+          <button class="btn btn-primary space-top new_box">Add a new box</button>
           {% endif %}
         </div>
         <div class="tab-pane" id="stargazers">
