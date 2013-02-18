@@ -161,10 +161,10 @@ a.undecorated:hover {
 }
 
 .stream {
-	border-bottom: 1px solid @grayLight2;
-	padding: 0.6em;
+    border-bottom: 1px solid @grayLight2;
+    padding: 0.6em;
 
-	&:last-child {
+    &:last-child {
         border-bottom: none;
     }
 
@@ -173,7 +173,7 @@ a.undecorated:hover {
     }
 
     .span1 {
-    	line-height: 1.3em;
+        line-height: 1.3em;
         font-size: 2em;
         color: @grayLight2;
     }
@@ -185,7 +185,7 @@ a.undecorated:hover {
 }
 
 .loading {
-	padding-left: 20px;
+    padding-left: 20px;
     background: url('../img/loading.gif') no-repeat center left;
 }
 
@@ -207,7 +207,17 @@ a.undecorated:hover {
 }
 
 .errorlist {
-	list-style: none;
+    list-style: none;
     color: @errorText;
     margin: 0;
+}
+
+li a.idx {
+    font-size: 2em;
+    color: @gray2;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: none;
+    }
 }

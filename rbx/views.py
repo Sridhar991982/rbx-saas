@@ -103,7 +103,7 @@ def project(request, username, project):
     if not project.is_allowed(request.user.get_profile()):
         raise Http404
     project.boxes = Box.objects.filter(project=project)
-    project.all_runs = Run.objects.filter(box__in=project.box_set.iterator())
+    project.all_runs = Run.objects.filter(box__in=project.box_set.iterator()).order_by('-launched')
     project.user_runs = project.all_runs.filter(user=request.user.get_profile())
     print(dir(project.box_set))
     if request.method == 'POST':
@@ -224,13 +224,7 @@ def edit_box(request, username, project, box):
     })
 
 
-def start_run(request, secret):
-    run = get_object_or_404(Run, secret_key=secret)
-    run.set_status('Running')
-    return HttpResponse('{status: 0}')
-
-
-def finish_run(request, secret, status):
+def run_status(request, secret, status):
     run = get_object_or_404(Run, secret_key=secret)
     run.set_status(status)
     return HttpResponse('{status: 0}')

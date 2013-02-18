@@ -87,14 +87,13 @@
             <div class="row-fluid space-bottom">
               <div class="span3">
                 {{ box.run_set.values|length }} run{{ box.run_set.values|pluralize }}<br />
-                Avg. run time: {{ box.avg_duration|elapsed }}
+                Avg. {{ box.avg_duration|elapsed }}
               </div>
               <div class="span9">
                 <p>
                   {% if box.description %}{{ box.description }}
                   {% else %}No box description available.{% endif %}
                 </p>
-                <p>Source code: <em>{{ box.source_repository }}</em></p>
               </div>
             </div>
             {% empty %}
@@ -161,21 +160,12 @@
           <ul class="unstyled runs">
             {% for run in project.all_runs %}
             <li>
-              <i class="icon-ok-sign"></i> <a href="#">Run #{{ run.pk }}</a>
-              <small>
-                Started by {{ run.user|profile_url:run.user.user.username }},
-                {{ run.launched|timesince }} ago,
-                {% if run.status == 0 %}
-                on error
-                {% elif run.status == 1 %}
-                pending execution
-                {% elif run.status == 2 %}
-                aborted
-                {% elif run.status == 3 %}
-                running
-                {% else %}
-                completed in {{ run.duration }}
-                {% endif %}
+              <a href="#" class="idx pull-right">#{{ run.pk }}</a>
+              {% gravatar run.user.gravatar_email 20 %} {{ run.user|profile_url:run.user.user.username }}, {{ run.launched|timesince }} ago<br />
+              <small class="space-left">
+                    {{ run.status_text }}{% if run.status > 3 %},
+                    in {{ run.duration|elapsed }}
+                    {% endif %}
               </small>
             </li>
             {% empty %}
@@ -187,20 +177,12 @@
           <ul class="unstyled runs">
             {% for run in project.user_runs %}
             <li>
-              <i class="icon-ok-sign"></i> <a href="#">Run #{{ run.pk }}</a>
-              <small>
-                Started {{ run.launched|timesince }} ago,
-                {% if run.status == 0 %}
-                on error
-                {% elif run.status == 1 %}
-                pending execution
-                {% elif run.status == 2 %}
-                aborted
-                {% elif run.status == 3 %}
-                running
-                {% else %}
-                completed in {{ run.duration }}
-                {% endif %}
+              <a href="#" class="idx pull-right">#{{ run.pk }}</a>
+              <i class="icon-time"></i> {{ run.launched|timesince }} ago<br />
+              <small class="space-left">
+                    {{ run.status_text }}{% if run.status > 3 %},
+                    in {{ run.duration|elapsed }}
+                    {% endif %}
               </small>
             </li>
             {% empty %}

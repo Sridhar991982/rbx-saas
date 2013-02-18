@@ -31,9 +31,9 @@ RUN_STATUS = (
     (0, 'Error'),
     (1, 'Pending'),
     (2, 'Aborted'),
-    (3, 'Running'),
-    (4, 'Cancelled'),
-    (5, 'Succeed'),
+    (3, 'Cancelled'),
+    (4, 'Running'),
+    (5, 'Succeeded'),
     (6, 'Failed'),
 )
 
@@ -229,9 +229,9 @@ class Run(models.Model):
         if self.status == idx:
             return
         self.status = idx
-        if idx == 3:
+        if idx == 4:
             self.started = datetime.now()
-        elif idx > 3:
+        elif idx > 4:
             self.duration = (datetime.now() - self.started).total_seconds()
         self.save()
 
@@ -276,6 +276,11 @@ class Run(models.Model):
     def _info(self, xml=True):
         success, info, _ = self.rpc.one.vm.info(CLOUD_AUTH, self.vm_id)
         return xml and etree.fromstring(info.encode('utf-8')) or info
+
+    def status_text(self):
+        for idx, status in RUN_STATUS:
+            if self.status == idx:
+                return status
 
     class Meta:
         get_latest_by = 'launched'

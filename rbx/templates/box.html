@@ -26,7 +26,7 @@
             {% endfor %}
           </li>
           <li><i class="icon-link"></i> <a href="{{ box.project.link }}">{{ box.project }}</a></li>
-          <li><i class="icon-calendar"></i> 
+          <li><i class="icon-beaker"></i> 
           {% if box.run_set.latest %}
           Last run {{ box.run_set.latest.launched|timesince }} ago
           {% else %}
@@ -44,7 +44,7 @@
           </li>
           <li>
             <i class="icon-time"></i>
-            Avg. run time: {{ box.avg_duration|elapsed }}
+            Avg. {{ box.avg_duration|elapsed }}
             long
           </li>
         </ul>
