@@ -26,9 +26,9 @@
             {% endfor %}
           </li>
           <li><i class="icon-link"></i> <a href="{{ box.project.link }}">{{ box.project }}</a></li>
-          <li><i class="icon-time"></i> 
+          <li><i class="icon-calendar"></i> 
           {% if box.run_set.latest %}
-          Last run {{ box.run_set.lastest.started|timesince }} ago
+          Last run {{ box.run_set.latest.launched|timesince }} ago
           {% else %}
           No run yet
           {% endif %}
@@ -40,11 +40,11 @@
           <li>
             <i class="icon-cogs"></i>
             <strong>{{ box.run_set.values|length }}</strong>
-            <span>run{{ box.runs|pluralize }}</span>
+            <span>run{{ box.run_set.values|pluralize }}</span>
           </li>
           <li>
             <i class="icon-time"></i>
-            {{ box.run_set.latest.duration }}
+            Avg. run time: {{ box.avg_duration|elapsed }}
             long
           </li>
         </ul>

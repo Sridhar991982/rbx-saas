@@ -8,7 +8,6 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import slugify
-from django.db.models import Count
 from actstream.models import followers, following
 from actstream.actions import is_following, follow, unfollow
 from uuid import uuid4
@@ -104,9 +103,9 @@ def project(request, username, project):
     if not project.is_allowed(request.user.get_profile()):
         raise Http404
     project.boxes = Box.objects.filter(project=project)
-    project.all_runs = Run.objects.filter(box__in=project.boxes)
+    project.all_runs = Run.objects.filter(box__in=project.box_set.iterator())
     project.user_runs = project.all_runs.filter(user=request.user.get_profile())
-    project.boxes.annotate(nb_runs=Count('run'))
+    print(dir(project.box_set))
     if request.method == 'POST':
         box_form = BoxForm(request.POST, project=project, form_class='well',
                            initial={'project': project}, action=project.link())
@@ -116,17 +115,18 @@ def project(request, username, project):
                 messages.success(request, '%s box successfully saved'
                                  % box_form.cleaned_data['name'].title())
                 return HttpResponseRedirect(reverse('box',
-                        args=(project.owner.user.username,
-                              project.slug, box_form.cleaned_data['name'])))
+                                                    args=(project.owner.user.username,
+                                                          project.slug,
+                                                          box_form.cleaned_data['name'])))
             except Exception:
                 messages.error(request, 'Oops, something wrong happened,' +
                                         ' please try again...')
                 return HttpResponseRedirect(reverse('project',
-                        args=(project.owner.user.username,
-                            project.slug)))
+                                                    args=(project.owner.user.username,
+                                                          project.slug)))
     else:
         box_form = BoxForm(project=project, form_class='well',
-                            initial={'project': project}, action=project.link('boxes'))
+                           initial={'project': project}, action=project.link('boxes'))
     return render(request, 'project.html', {
         'project': project,
         'box_error': request.method == 'POST',
@@ -160,32 +160,24 @@ def edit_project(request, username, project):
 
 @login_required
 def star_project(request, username, project):
-    try:
-        project = Project.objects.get(
-            owner=User.objects.get(username=username).get_profile(),
-            slug=project
-        )
-        if not project.is_allowed(request.user.get_profile()):
-            raise Http404
-        if is_following(request.user.get_profile(), project):
-            unfollow(request.user.get_profile(), project)
-        else:
-            follow(request.user.get_profile(), project, actor_only=False)
-    except Project.DoesNotExist:
+    owner = User.objects.get(username=username).get_profile()
+    project = get_object_or_404(Project, owner=owner, slug=project)
+    if not project.is_allowed(request.user.get_profile()):
         raise Http404
-    except:
-        raise
+    if is_following(request.user.get_profile(), project):
+        unfollow(request.user.get_profile(), project)
+    else:
+        follow(request.user.get_profile(), project, actor_only=False)
     return HttpResponseRedirect(reverse('project',
-                args=(project.owner.user.username,
-                      project.slug)))
+                                        args=(project.owner.user.username,
+                                              project.slug)))
 
 
 def box(request, username, project, box):
     owner = User.objects.get(username=username).get_profile()
     project = get_object_or_404(Project, owner=owner, slug=project)
     box = get_object_or_404(Box, project=project, name=box)
-    # TODO: Check if user authenticated
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated():
         launch = RunForm(request.POST)
         if launch.is_valid():
             try:
@@ -224,7 +216,7 @@ def edit_box(request, username, project, box):
                 status = 'error'
     else:
         form = BoxForm(instance=box, project=project, action=box.edit_link(),
-                        initial={'project': project})
+                       initial={'project': project})
     return render(request, 'edit_box.html', {
         'box': box,
         'edit_form': form,
@@ -235,7 +227,7 @@ def edit_box(request, username, project, box):
 def start_run(request, secret):
     run = get_object_or_404(Run, secret_key=secret)
     run.set_status('Running')
-    return HttpResponse('')
+    return HttpResponse('{status: 0}')
 
 
 def finish_run(request, secret, status):

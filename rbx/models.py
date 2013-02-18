@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.db import models
+from django.db.models import Avg
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
@@ -177,6 +178,9 @@ class Box(models.Model):
         return reverse('edit_box', args=[self.project.owner.user.username,
                                          self.project.slug,
                                          self.name])
+
+    def avg_duration(self):
+        return Run.objects.filter(box=self, status__gt=4).aggregate(Avg('duration'))['duration__avg']
 
     class Meta:
         unique_together = ('project', 'name')

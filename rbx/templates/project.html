@@ -86,15 +86,15 @@
                 {{ box.name }} box</a></h3>
             <div class="row-fluid space-bottom">
               <div class="span3">
-                {{ box.nb_runs }} run{{ box.nb_runs|pluralize }}<br />
-                Avg. run time: {{ box.avg_time }}s
+                {{ box.run_set.values|length }} run{{ box.run_set.values|pluralize }}<br />
+                Avg. run time: {{ box.avg_duration|elapsed }}
               </div>
               <div class="span9">
                 <p>
                   {% if box.description %}{{ box.description }}
                   {% else %}No box description available.{% endif %}
                 </p>
-                <p>Source code: <em>{{ box.source }}</em></p>
+                <p>Source code: <em>{{ box.source_repository }}</em></p>
               </div>
             </div>
             {% empty %}
