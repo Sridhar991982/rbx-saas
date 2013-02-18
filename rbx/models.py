@@ -200,7 +200,7 @@ class Run(models.Model):
     user = models.ForeignKey(UserProfile)
     launched = models.DateTimeField(auto_now_add=True)
     started = models.DateTimeField(null=True)
-    duration = models.PositiveSmallIntegerField(null=True)
+    duration = models.FloatField(null=True)
     status = models.PositiveSmallIntegerField(choices=RUN_STATUS, default=1)
     secret_key = models.CharField(max_length=36)
     vm_id = models.PositiveSmallIntegerField(null=True)
@@ -222,11 +222,14 @@ class Run(models.Model):
 
     def set_status(self, name):
         idx = self.get_status_id(name)
+        if self.status == idx:
+            return
         self.status = idx
         if idx == 3:
             self.started = datetime.now()
         elif idx > 3:
-            self.duration = datetime.now() - self.started
+            self.duration = (datetime.now() - self.started).total_seconds()
+        self.save()
 
     def start(self):
         # XXX: Check if user is not over quota

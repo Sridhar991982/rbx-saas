@@ -18,6 +18,13 @@ projects_urls = patterns('rbx.views',
     url(r'^/(?P<box>[\w-]+)', include(box_urls)),
 )
 
+run_urls = patterns('rbx.views',
+    url(r'^start$', 'start_run', name='start_run'),
+    url(r'^succeed$', 'finish_run', {'status': 'Succeed'}, name='finish_run'),
+    url(r'^failed$', 'finish_run', {'status': 'Failed'}, name='finish_run'),
+    url(r'^save$', 'save_data', name='save_data'),
+)
+
 urlpatterns = patterns('rbx.views',
     url(r'^$', 'home_or_dashboard', name='home'),
     url(r'^home$', 'home'),
@@ -30,6 +37,7 @@ urlpatterns = patterns('rbx.views',
     url(r'^explore$', 'home', name='explore'),
     url(r'^new$', 'new_project', name='new_project'),
     url(r'^settings/', include(settings_urls)),
+    url(r'^run/(?P<secret>[a-f0-9-]+)/', include(run_urls)),
     url(r'^(?P<username>\w+)$', 'profile', name='profile'),
     url(r'^(?P<username>\w+)/(?P<project>[\w-]+)', include(projects_urls)),
 )

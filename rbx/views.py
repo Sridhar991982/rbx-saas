@@ -1,4 +1,7 @@
-from django.http import HttpResponseRedirect, Http404
+from os import makedirs
+from os.path import join, isdir
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -10,7 +13,7 @@ from actstream.models import followers, following
 from actstream.actions import is_following, follow, unfollow
 from uuid import uuid4
 
-from settings import EDIT_RIGHT
+from settings import EDIT_RIGHT, STORAGE
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
     BoxForm, RunForm
 from rbx.models import Project, UserProfile, Box, Run
@@ -181,6 +184,7 @@ def box(request, username, project, box):
     owner = User.objects.get(username=username).get_profile()
     project = get_object_or_404(Project, owner=owner, slug=project)
     box = get_object_or_404(Box, project=project, name=box)
+    # TODO: Check if user authenticated
     if request.method == 'POST':
         launch = RunForm(request.POST)
         if launch.is_valid():
@@ -226,3 +230,31 @@ def edit_box(request, username, project, box):
         'edit_form': form,
         'status': status,
     })
+
+
+def start_run(request, secret):
+    run = get_object_or_404(Run, secret_key=secret)
+    run.set_status('Running')
+    return HttpResponse('')
+
+
+def finish_run(request, secret, status):
+    run = get_object_or_404(Run, secret_key=secret)
+    run.set_status(status)
+    return HttpResponse('{status: 0}')
+
+
+@csrf_exempt
+def save_data(request, secret):
+    run = get_object_or_404(Run, secret_key=secret)
+    if request.method == 'POST':
+        if not 'title' in request.POST or not 'file' in request.FILES:
+            return HttpResponse('{status: 2}')
+        location = join(STORAGE, str(run.pk))
+        if not isdir(location):
+            makedirs(location)
+        with open(join(location, request.POST['title']), 'wb+') as destination:
+            for chunk in request.FILES['file'].chunks():
+                destination.write(chunk)
+        return HttpResponse('{status: 0}')
+    return HttpResponse('{status: 1}')

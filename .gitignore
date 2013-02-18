@@ -6,3 +6,4 @@ lib/django
 *.swp
 .venv
 rbx-docs
+results
