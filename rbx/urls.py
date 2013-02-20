@@ -18,6 +18,12 @@ projects_urls = patterns('rbx.views',
     url(r'^/(?P<box>[\w-]+)', include(box_urls)),
 )
 
+profile_url = patterns('rbx.views',
+    url(r'^$', 'profile', name='profile'),
+    url(r'^/follow$', 'follow_user', name='follow'),
+    url(r'^/(?P<project>[\w-]+)', include(projects_urls)),
+)
+
 run_urls = patterns('rbx.views',
     url(r'^start$', 'run_status', {'status': 'Running'}, name='start_run'),
     url(r'^abort$', 'run_status', {'status': 'Aborted'}, name='abort_run'),
@@ -40,6 +46,5 @@ urlpatterns = patterns('rbx.views',
     url(r'^new$', 'new_project', name='new_project'),
     url(r'^settings/', include(settings_urls)),
     url(r'^run/(?P<secret>[a-f0-9-]+)/', include(run_urls)),
-    url(r'^(?P<username>\w+)$', 'profile', name='profile'),
-    url(r'^(?P<username>\w+)/(?P<project>[\w-]+)', include(projects_urls)),
+    url(r'^(?P<username>\w+)', include(profile_url)),
 )

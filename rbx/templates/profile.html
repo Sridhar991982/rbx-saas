@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load gravatar %}
+{% load activity_tags %}
 {% load url from future %}
 {% load rbx %}
 
@@ -19,10 +20,17 @@
           <a href="{% url "settings_profile" %}" rel="tooltip" title="Edit your profile"
           class="space-left undecorated">
           <i class="icon-wrench icon-small"></i> <span class="tiny hidden-desktop">Edit profile</span></a>
+          {% elif user.is_authenticated %}
+          <a href="{% url "follow" profile.user.username %}" rel="tooltip" 
+              title="{% if user|is_following:profile %}Unf{% else %}F{% endif %}ollow {{ profile }}"
+              class="space-left undecorated">
+          <i class="icon-heart{% if user|is_following:profile %}-empty{% endif %}
+              icon-small"></i> <span class="tiny hidden-desktop">
+              {% if user|is_following:profile %}Unf{% else %}F{% endif %}ollow {{ profile }}</span></a>
           {% endif %}
         </h1>
         <div class="row-fluid">
-          <div class="span7">
+          <div class="span8">
             <ul class="unstyled">
               {% if profile.school  %}
               <li><i class="icon-briefcase"></i> Studies at {{ profile.school }}</li>
@@ -44,22 +52,39 @@
               {{ profile.user.date_joined|date:"N j, Y" }}</li>
             </ul>
           </div>
-          <div class="span5">
+          <div class="span2">
             <ul class="stats unstyled">
               <li>
+                <a href="#followers">
                 <i class="icon-user"></i>
-                <strong>{{ profile.nb_followers }}</strong>
-                <span>follower{{ profile.nb_followers|pluralize }}</span>
+                <strong>{{ profile.followers|length }}</strong>
+                <span>follower{{ profile.followers|length|pluralize }}</span>
+                </a>
               </li>
               <li>
-                <i class="icon-star"></i>
-                <strong>{{ profile.nb_starred }}</strong>
-                <span>starred</span>
-              </li>
-              <li>
+                <a href="#following">
                 <i class="icon-heart"></i>
-                <strong>{{ profile.nb_following }}</strong>
+                <strong>{{ profile.following|length }}</strong>
                 <span>following</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="span2">
+            <ul class="stats unstyled">
+              <li>
+                <a href="#starred">
+                <i class="icon-star"></i>
+                <strong>{{ profile.starred|length }}</strong>
+                <span>starred</span>
+                </a>
+              </li>
+              <li>
+                <a href="#contributed">
+                <i class="icon-file"></i>
+                <strong>{{ projects|length }}</strong>
+                <span>project{{ project|length|pluralize }}</span>
+                </a>
               </li>
             </ul>
           </div>
@@ -70,49 +95,98 @@
 </div>
 <div class="container space-top">
   <div class="row-fluid">
-    <div class="span7">
-      <h2>Public activity</h2>
-      <p>No public activity not available right now.</p>
-      <!--
-      {# for action in stream %}
-        {% if action.target_content_type.name == "project" %}
-        <div class="row-fluid stream">
-          <div class="span1 visible-desktop">
-            <i class="pull-left icon-plus-sign"></i>
+      <div class="span7">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#activity"><i class="icon-book"></i>  Activity</a></li>
+        <li><a href="#followers"><i class="icon-user"></i> Followers</a></li>
+        <li><a href="#following"><i class="icon-heart"></i> Following</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="activity">
+            <p>No public activity not available right now.</p>
+            <!--
+            {# for action in stream %}
+                {% if action.target_content_type.name == "project" %}
+                <div class="row-fluid stream">
+                <div class="span1 visible-desktop">
+                    <i class="pull-left icon-plus-sign"></i>
+                </div>
+                <div class="span11">
+                    <a href="{% url "profile" action.actor.user %}">{{ action.actor }}</a>
+                    {{ action.verb }}
+                    {{ action.target_content_type.name }}
+                    <a href="{% url "project" action.actor.user action.target.slug %}">
+                    {{ action.target.name }}
+                    </a>
+                    <small>{{ action.timesince }} ago</small>
+                </div>
+                </div>
+                {% endif %}
+            {# empty %}
+            <p class="stream">{{ profile }} has no public activity.</p>
+            {% endfor #}
+            -->
           </div>
-          <div class="span11">
-            <a href="{% url "profile" action.actor.user %}">{{ action.actor }}</a>
-            {{ action.verb }}
-            {{ action.target_content_type.name }}
-            <a href="{% url "project" action.actor.user action.target.slug %}">
-              {{ action.target.name }}
-            </a>
-            <small>{{ action.timesince }} ago</small>
+          <div class="tab-pane" id="followers">
+            {% for follower in profile.followers %}
+            <div class="stream">
+            <p class="pull-left space-right">
+            {% gravatar follower.gravatar 25 %}
+            </p>
+            <p class="no-margin">
+            {{ follower|profile_url:follower.user.username }}
+            </p>
+            </div>
+            {% empty %}
+            <p>{{ profile }} has not follower yet.</p>
+            {% endfor %}
+          </div>
+          <div class="tab-pane" id="following">
+            {% for followe in profile.following %}
+            <div class="stream">
+            <p class="pull-left space-right">
+            {% gravatar followe.gravatar 25 %}
+            </p>
+            <p class="no-margin">
+            {{ followe|profile_url:followe.user.username }}
+            </p>
+            </div>
+            {% empty %}
+            <p>{{ profile }} don't follow anyone yet.</p>
+            {% endfor %}
           </div>
         </div>
-        {% endif %}
-      {# empty %}
-      <p class="stream">{{ profile }} has no public activity.</p>
-      {% endfor #}
-      -->
     </div>
     <div class="span5">
-      <h2>Projects
-          {% if user == profile.user %}
-          <a href="{% url "new_project" %}" rel="tooltip" title="Create a new project"
-          class="space-left undecorated">
-          <i class="icon-edit icon-small"></i> <span class="tiny hidden-desktop">New project</span></a>
-          {% endif %}
-      </h2>
-      <ul class="unstyled projects">
-        {% for project in projects %}
-        <li><i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
-          <a href="{% url "project" project.owner.user.username project.slug %}">{{ project.name }}</a>
-        </li>
-        {% empty %}
-        <li>{{ profile }} has no public project.</li>
-        {% endfor %}
+      <ul class="nav nav-tabs">
+          <li class="active"><a href="#contributed"><i class="icon-file"></i> 
+            Contributed projects</a></li>
+          <li><a href="#starred"><i class="icon-star"></i> Starred projects</a></li>
       </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="contributed">
+          <ul class="unstyled projects">
+            {% for project in projects %}
+            <li><i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
+            <a href="{% url "project" project.owner.user.username project.slug %}">{{ project.name }}</a>
+            </li>
+            {% empty %}
+            <li>{{ profile }} don't contribute to public project yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="tab-pane" id="starred">
+          <ul class="unstyled projects">
+            {% for starred in profile.starred %}
+            <li><i class="gray icon-{% if starred.public %}un{% endif %}lock"></i>
+            <a href="{% url "project" starred.owner.user.username starred.slug %}">{{ starred.name }}</a>
+            </li>
+            {% empty %}
+            <li>{{ profile }} has no starred project yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </div>

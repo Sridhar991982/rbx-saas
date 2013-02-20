@@ -98,12 +98,14 @@ class Project(models.Model):
         return '%s project' % self.name
 
     def is_allowed(self, user, type=VIEW_RIGHT):
-        if self.owner == user:
-            return True
         if self.public and type == VIEW_RIGHT:
             return True
+        if not user.is_authenticated() and TYPE != VIEW_RIGHT:
+            return False
+        if self.owner == user.get_profile():
+            return True
         try:
-            authorized = ProjectRight.objects.get(user=user, project=self)
+            authorized = ProjectRight.objects.get(user=user.get_profile(), project=self)
         except ProjectRight.DoesNotExist:
             return False
         return authorized.type >= type

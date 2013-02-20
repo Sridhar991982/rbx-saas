@@ -10,7 +10,7 @@
   <div class="container">
     <h1 class="collapse-bottom">
       {{ box }}
-      {% if box.project|is_editable:user.get_profile %}
+      {% if box.project|is_editable:user %}
       <a href="{{ box.edit_link }}"
          title="Edit box" class="space-left undecorated modal-fragment"
          data-target="#edit-modal" rel="tooltip">

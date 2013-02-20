@@ -94,10 +94,13 @@ var RBX = (function () {
     }
 
     var _navTabs = function () {
-        $('.nav-tabs a').on('click', function () {
-            $(this).tab('show')
-            location.hash = '/' + $(this).attr('href').substr(1)
-            return false
+        $('a').on('click', function () {
+            var href = $(this).attr('href')
+            if (href.startsWith('#') && $(href).hasClass('tab-pane')) {
+                $('[href='+href+']').tab('show')
+                location.hash = '/' + href.substr(1)
+                return false
+            }
         })
     }
 
@@ -105,7 +108,7 @@ var RBX = (function () {
         var hash = location.hash.substr(2),
             hashPieces = hash.split('?'),
             activeTab = $('[href=#' + hashPieces[0] + ']')
-            activeTab && activeTab.tab('show')
+        activeTab && activeTab.tab('show')
     }
 
     var _newBoxForm = function () {

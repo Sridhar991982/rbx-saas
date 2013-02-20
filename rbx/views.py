@@ -58,9 +58,9 @@ def profile(request, username):
         stream = None  # actor_stream(user.get_profile())
         projects = Project.objects.filter(owner=user).order_by('-created')
         user = user.get_profile()
-        user.nb_followers = len(followers(user))
-        user.nb_starred = len(following(user, Project))
-        user.nb_following = len(following(user, UserProfile))
+        user.followers = followers(user)
+        user.starred = following(user, Project)
+        user.following = following(user, UserProfile)
     except User.DoesNotExist:
         raise Http404
     return render(request, 'profile.html', {
@@ -100,11 +100,13 @@ def new_project(request):
 def project(request, username, project):
     owner = User.objects.get(username=username).get_profile()
     project = get_object_or_404(Project, owner=owner, slug=project)
-    if not project.is_allowed(request.user.get_profile()):
+    if not project.is_allowed(request.user):
         raise Http404
     project.boxes = Box.objects.filter(project=project)
     project.all_runs = Run.objects.filter(box__in=project.box_set.iterator()).order_by('-launched')
-    project.user_runs = project.all_runs.filter(user=request.user.get_profile())
+    if request.user.is_authenticated():
+        project.user_runs = project.all_runs.filter(user=request.user.get_profile())[:10]
+    project.all_runs = project.all_runs[:10]
     print(dir(project.box_set))
     if request.method == 'POST':
         box_form = BoxForm(request.POST, project=project, form_class='well',
@@ -139,7 +141,7 @@ def edit_project(request, username, project):
     status = 'edit'
     owner = User.objects.get(username=username).get_profile()
     project = get_object_or_404(Project, owner=owner, slug=project)
-    if not project.is_allowed(request.user.get_profile(), EDIT_RIGHT):
+    if not project.is_allowed(request.user, EDIT_RIGHT):
         raise Http404
     if request.method == 'POST':
         form = EditProjectForm(request.POST, instance=project)
@@ -160,17 +162,15 @@ def edit_project(request, username, project):
 
 @login_required
 def star_project(request, username, project):
-    owner = User.objects.get(username=username).get_profile()
+    owner = get_object_or_404(User, username=username).get_profile()
     project = get_object_or_404(Project, owner=owner, slug=project)
-    if not project.is_allowed(request.user.get_profile()):
+    if not project.is_allowed(request.user):
         raise Http404
     if is_following(request.user.get_profile(), project):
         unfollow(request.user.get_profile(), project)
     else:
         follow(request.user.get_profile(), project, actor_only=False)
-    return HttpResponseRedirect(reverse('project',
-                                        args=(project.owner.user.username,
-                                              project.slug)))
+    return HttpResponseRedirect(project.link())
 
 
 def box(request, username, project, box):
@@ -200,10 +200,10 @@ def box(request, username, project, box):
 @login_required
 def edit_box(request, username, project, box):
     status = 'edit'
-    owner = User.objects.get(username=username).get_profile()
+    owner = get_object_or_404(User, username=username).get_profile()
     project = get_object_or_404(Project, owner=owner, slug=project)
     box = get_object_or_404(Box, project=project, name=box)
-    if not project.is_allowed(request.user.get_profile(), EDIT_RIGHT):
+    if not project.is_allowed(request.user, EDIT_RIGHT):
         raise Http404
     if request.method == 'POST':
         form = BoxForm(request.POST, instance=box, action=box.edit_link(),
@@ -244,3 +244,13 @@ def save_data(request, secret):
                 destination.write(chunk)
         return HttpResponse('{status: 0}')
     return HttpResponse('{status: 1}')
+
+
+@login_required
+def follow_user(request, username):
+    user = get_object_or_404(User, username=username).get_profile()
+    if is_following(request.user.get_profile(), user):
+        unfollow(request.user.get_profile(), user)
+    else:
+        follow(request.user.get_profile(), user, actor_only=False)
+    return HttpResponseRedirect(reverse('profile', args=[username]))
