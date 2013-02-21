@@ -65,4 +65,4 @@ def own_run(runs, user):
 def restrict(projects, user):
     if not user.is_authenticated():
         return [p for p in projects if p.public]
-    return [p for p in projects if p.is_allowed(user)]
+    return [p for p in projects if p.public or p.is_allowed(user)]
