@@ -138,6 +138,7 @@ class BoxForm(forms.ModelForm):
             Field('before_run', css_class='input-block-level'),
             Field('run_command', css_class='input-block-level'),
             Field('after_run', css_class='input-block-level'),
+            'disabled',
             Div(
                 Div(
                     Submit('save_box', 'Save box and add parameters',

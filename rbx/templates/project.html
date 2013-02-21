@@ -32,7 +32,7 @@
           </a>
         </div>
         <ul class="unstyled space-top">
-          <li><i class="icon-{{ project.co_authors|pluralize:"user,group" }}"></i> By
+          <li><i class="icon-{{ project.authors|length|pluralize:"user,group" }}"></i> By
             {% for author in project.authors %}
               {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
             {% endfor %}
@@ -45,22 +45,22 @@
           <li>
             <a href="#all-runs">
             <i class="icon-cogs"></i>
-            <strong>{{ project.all_runs|length }}</strong>
-            <span>run{{ project.all_runs|pluralize }}</span>
+            <strong>{{ project.runs|length }}</strong>
+            <span>run{{ project.runs|length|pluralize }}</span>
             </a>
           </li>
           <li>
             <a href="#boxes">
             <i class="icon-briefcase"></i>
             <strong>{{ project.boxes|length }}</strong>
-            <span>box{{ project.boxes|pluralize:"es" }}</span>
+            <span>box{{ project.boxes|length|pluralize:"es" }}</span>
             </a>
           </li>
           <li>
             <a href="#stargazers">
             <i class="icon-star"></i>
             <strong>{{ project.stargazers|length }}</strong>
-            <span>stargazer{{ prorject.stargazers|pluralize }}</span>
+            <span>stargazer{{ prorject.stargazers|length|pluralize }}</span>
             </a>
           </li>
         </ul>
@@ -158,18 +158,20 @@
     </div>
     <div class="span5">
       <ul class="nav nav-tabs">
-        <li class="active"><a href="#all-runs" data-toggle="tab">
+        <li class="active"><a href="#latest-runs" data-toggle="tab">
           <i class="icon-cogs"></i> Latest runs</a></li>
         <li><a href="#my-runs" data-toggle="tab">
           <i class="icon-cog"></i> My latest runs</a></li>
       </ul>
       <div class="tab-content">
-        <div class="tab-pane active" id="all-runs">
+        <div class="tab-pane active" id="latest-runs">
           <ul class="unstyled runs">
-            {% for run in project.all_runs %}
+            {% for run in project.runs %}
             <li>
               <a href="#" class="idx pull-right">#{{ run.pk }}</a>
-              {% gravatar run.user.gravatar_email 20 %} {{ run.user|profile_url:run.user.user.username }}, {{ run.launched|timesince }} ago<br />
+              {% gravatar run.user.gravatar 20 %} 
+              {{ run.user|profile_url:run.user.user.username }}, 
+              {{ run.launched|timesince }} ago<br />
               <small class="space-left">
                     {{ run.status_text }},
                     using <a href="{{ run.box.link }}">
@@ -185,7 +187,7 @@
         </div>
         <div class="tab-pane" id="my-runs">
           <ul class="unstyled runs">
-            {% for run in project.user_runs %}
+            {% for run in project.runs|own_run:user %}
             <li>
               <a href="#" class="idx pull-right">#{{ run.pk }}</a>
               <i class="icon-time"></i> {{ run.launched|timesince }} ago<br />
@@ -198,11 +200,11 @@
               </small>
             </li>
             {% empty %}
-            {% if user.is_authenticated %}
-            <li>You have never run this project.</li>
-            {% else %}
-            <li><a href="{% url "login" %}">Sign in</a> to run this project!</a></li>
-            {% endif %}
+                {% if user.is_authenticated %}
+                <li>You have never run this project.</li>
+                {% else %}
+                <li><a href="{% url "login" %}">Sign in</a> to run this project!</a></li>
+                {% endif %}
             {% endfor %}
           </ul>
         </div>

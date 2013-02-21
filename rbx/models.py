@@ -1,11 +1,13 @@
 from datetime import datetime
 from django.db import models
+from django.http import Http404
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
     CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY
-from actstream.models import followers, target_stream
+from actstream.models import followers, following, target_stream
 import xmlrpclib
 import xml.etree.cElementTree as etree
 
@@ -19,12 +21,6 @@ EXECUTOR_SOURCE_TYPE = (
     ('git', 'Git'),
     ('hg', 'Mercurial'),
     ('git svn', 'Subversion'),
-)
-
-EXECUTOR_PARAM_TYPE = (
-    ('string', 'String'),
-    ('text', 'Text'),
-    ('int', 'Integer'),
 )
 
 RUN_STATUS = (
@@ -84,6 +80,29 @@ class UserProfile(models.Model):
     def gravatar(self):
         return self.gravatar_email or self.user.email
 
+    def projects(self):
+        user_projects = list(Project.objects.filter(owner=self))
+        contribute = ProjectRight.objects.filter(user=self).filter(right=EDIT_RIGHT)
+        user_projects.extend([c.project for c in contribute])
+        return user_projects
+
+    def followers(self):
+        return followers(self)
+
+    def starred(self):
+        return following(self, Project)
+
+    def following(self):
+        return following(self, UserProfile)
+
+    def stream(self):
+        #user_stream(request.user.get_profile())
+        return None
+
+    def activity(self):
+        #actor_stream(user.get_profile())
+        return None
+
 
 class Project(models.Model):
     slug = models.SlugField(db_index=True)
@@ -97,10 +116,10 @@ class Project(models.Model):
     def __unicode__(self):
         return '%s project' % self.name
 
-    def is_allowed(self, user, type=VIEW_RIGHT):
-        if self.public and type == VIEW_RIGHT:
+    def is_allowed(self, user, right=VIEW_RIGHT):
+        if self.public and right == VIEW_RIGHT:
             return True
-        if not user.is_authenticated() and TYPE != VIEW_RIGHT:
+        if not user.is_authenticated() and right != VIEW_RIGHT:
             return False
         if self.owner == user.get_profile():
             return True
@@ -108,7 +127,7 @@ class Project(models.Model):
             authorized = ProjectRight.objects.get(user=user.get_profile(), project=self)
         except ProjectRight.DoesNotExist:
             return False
-        return authorized.type >= type
+        return authorized.right >= right
 
     def link(self, anchor=None):
         anchor = anchor and '#/' + anchor or ''
@@ -124,7 +143,7 @@ class Project(models.Model):
         authors = [self.owner]
         authors.extend([r.user for r in
                         ProjectRight.objects.filter(project=self,
-                                                    type__gte=EDIT_RIGHT)])
+                                                    right__gte=EDIT_RIGHT)])
         return authors
 
     def stargazers(self):
@@ -133,6 +152,25 @@ class Project(models.Model):
     def activity(self):
         return target_stream(self)
 
+    def boxes(self):
+        return Box.objects.filter(project=self)
+
+    def runs(self, user=None):
+        if user is not None and not user.is_authenticated():
+            return None
+        project_runs = Run.objects.filter(box__in=self.box_set.iterator()).order_by('-launched')
+        if user:
+            return project_runs.filter(user=user.get_profile())[:10]
+        return project_runs[:10]
+
+    @staticmethod
+    def retrieve(username, project_slug, user):
+        owner = get_object_or_404(User, username=username).get_profile()
+        project = get_object_or_404(Project, owner=owner, slug=project_slug)
+        if not project.is_allowed(user):
+            raise Http404
+        return project
+
     class Meta:
         unique_together = ('owner', 'slug')
 
@@ -140,11 +178,11 @@ class Project(models.Model):
 class ProjectRight(models.Model):
     project = models.ForeignKey(Project, db_index=True)
     user = models.ForeignKey(UserProfile, db_index=True)
-    type = models.PositiveSmallIntegerField(choices=PROJECT_RIGHT,
-                                            max_length=20)
+    right = models.PositiveSmallIntegerField(choices=PROJECT_RIGHT,
+                                             max_length=20)
 
     def __unicode__(self):
-        return '%s\'s %s right' % (self.type, self.project.name)
+        return '%s\'s %s right' % (self.right, self.project.name)
 
 
 class OperatingSystem(models.Model):
@@ -166,6 +204,7 @@ class Box(models.Model):
     run_command = models.CharField(max_length=255)
     after_run = models.CharField(max_length=255, blank=True)
     lifetime = models.PositiveSmallIntegerField(default=3)
+    disabled = models.BooleanField(default=False)
 
     def __unicode__(self):
         return '%s\'s %s box' % (self.project.name, self.name)
@@ -182,7 +221,13 @@ class Box(models.Model):
                                          self.name])
 
     def avg_duration(self):
-        return Run.objects.filter(box=self, status__gt=4).aggregate(Avg('duration'))['duration__avg']
+        return Run.objects.filter(box=self,
+                                  status__gt=4).aggregate(Avg('duration'))['duration__avg']
+
+    @staticmethod
+    def retrieve(username, project_slug, box_name, user):
+        project = Project.retrieve(username, project_slug, user)
+        return get_object_or_404(Box, project=project, name=box_name)
 
     class Meta:
         unique_together = ('project', 'name')
@@ -190,12 +235,9 @@ class Box(models.Model):
 
 
 class BoxParam(models.Model):
-    slug = models.SlugField(db_index=True)
-    box = models.ForeignKey(Box, db_index=True)
-    name = models.CharField(max_length=50)
-    type = models.CharField(max_length=30, choices=EXECUTOR_PARAM_TYPE)
-    required = models.BooleanField(default=True)
-    activated = models.BooleanField(default=True)
+    name = models.SlugField()
+    box = models.ForeignKey(Box)
+    constraints = models.TextField()
 
     def __unicode__(self):
         return '%s\'s %s box param' % (self.box.project.name, self.name)
@@ -253,8 +295,8 @@ class Run(models.Model):
 
     def box_context_params(self):
         params = 'rbx_clone="%s clone %s %s",\n' % (self.box.repository_type,
-                                           self.box.source_repository,
-                                           self.box.name)
+                                                    self.box.source_repository,
+                                                    self.box.name)
         params += 'rbx_box_name="%s",\n' % self.box.name
         params += 'rbx_before_run="%s",\n' % self.box.before_run
         params += 'rbx_run_cmd="%s",\n' % self.box.run_command

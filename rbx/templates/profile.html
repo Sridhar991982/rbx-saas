@@ -11,8 +11,9 @@
   <div class="container">
     <div class="row-fluid">
       <div class="span2">
-        <img src="{% gravatar_url profile.gravatar 170 %}" alt="{{ profile }}'s picture" class="img-polaroid"
-              width="170" height="170" />
+        <img src="{% gravatar_url profile.gravatar 170 %}" 
+             alt="{{ profile }}'s picture" class="img-polaroid"
+             width="170" height="170" />
       </div>
       <div class="span9">
         <h1 class="collapse-bottom">{{ profile }}
@@ -73,17 +74,17 @@
           <div class="span2">
             <ul class="stats unstyled">
               <li>
-                <a href="#starred">
-                <i class="icon-star"></i>
-                <strong>{{ profile.starred|length }}</strong>
-                <span>starred</span>
+                <a href="#projects">
+                <i class="icon-file"></i>
+                <strong>{{ profile.projects|restrict:user|length }}</strong>
+                <span>project{{ profile.projects|restrict:user|length|pluralize }}</span>
                 </a>
               </li>
               <li>
-                <a href="#contributed">
-                <i class="icon-file"></i>
-                <strong>{{ projects|length }}</strong>
-                <span>project{{ project|length|pluralize }}</span>
+                <a href="#starred">
+                <i class="icon-star"></i>
+                <strong>{{ profile.starred|restrict:user|length }}</strong>
+                <span>starred</span>
                 </a>
               </li>
             </ul>
@@ -142,13 +143,13 @@
             {% endfor %}
           </div>
           <div class="tab-pane" id="following">
-            {% for followe in profile.following %}
+            {% for followee in profile.following %}
             <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar followe.gravatar 25 %}
+            {% gravatar followee.gravatar 25 %}
             </p>
             <p class="no-margin">
-            {{ followe|profile_url:followe.user.username }}
+            {{ followee|profile_url:followee.user.username }}
             </p>
             </div>
             {% empty %}
@@ -159,27 +160,29 @@
     </div>
     <div class="span5">
       <ul class="nav nav-tabs">
-          <li class="active"><a href="#contributed"><i class="icon-file"></i> 
-            Contributed projects</a></li>
-          <li><a href="#starred"><i class="icon-star"></i> Starred projects</a></li>
+          <li class="active"><a href="#projects"><i class="icon-file"></i> 
+            Projects</a></li>
+          <li><a href="#starred"><i class="icon-star"></i> Starred</a></li>
       </ul>
       <div class="tab-content">
-        <div class="tab-pane active" id="contributed">
+        <div class="tab-pane active" id="projects">
           <ul class="unstyled projects">
-            {% for project in projects %}
-            <li><i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
-            <a href="{% url "project" project.owner.user.username project.slug %}">{{ project.name }}</a>
+            {% for project in profile.projects|restrict:user %}
+            <li>
+                <i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
+                <a href="{{ project.link }}">{{ project.name }}</a>
             </li>
             {% empty %}
-            <li>{{ profile }} don't contribute to public project yet.</li>
+            <li>{{ profile }} has no public projects.</li>
             {% endfor %}
           </ul>
         </div>
         <div class="tab-pane" id="starred">
           <ul class="unstyled projects">
-            {% for starred in profile.starred %}
-            <li><i class="gray icon-{% if starred.public %}un{% endif %}lock"></i>
-            <a href="{% url "project" starred.owner.user.username starred.slug %}">{{ starred.name }}</a>
+            {% for starred in profile.starred|restrict:user %}
+            <li>
+                <i class="gray icon-{% if starred.public %}un{% endif %}lock"></i>
+                <a href="{{ starred.link }}">{{ starred.name }}</a>
             </li>
             {% empty %}
             <li>{{ profile }} has no starred project yet.</li>

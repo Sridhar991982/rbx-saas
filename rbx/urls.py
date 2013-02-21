@@ -25,11 +25,11 @@ profile_url = patterns('rbx.views',
 )
 
 run_urls = patterns('rbx.views',
-    url(r'^start$', 'run_status', {'status': 'Running'}, name='start_run'),
-    url(r'^abort$', 'run_status', {'status': 'Aborted'}, name='abort_run'),
-    url(r'^cancel$', 'run_status', {'status': 'Cancelled'}, name='cancel_run'),
-    url(r'^succeeded$', 'run_status', {'status': 'Succeeded'}, name='run_succeeded'),
-    url(r'^failed$', 'run_status', {'status': 'Failed'}, name='run_failed'),
+    url(r'^start$', 'set_run_status', {'status': 'Running'}, name='start_run'),
+    url(r'^abort$', 'set_run_status', {'status': 'Aborted'}, name='abort_run'),
+    url(r'^cancel$', 'set_run_status', {'status': 'Cancelled'}, name='cancel_run'),
+    url(r'^succeeded$', 'set_run_status', {'status': 'Succeeded'}, name='run_succeeded'),
+    url(r'^failed$', 'set_run_status', {'status': 'Failed'}, name='run_failed'),
     url(r'^save$', 'save_data', name='save_data'),
 )
 

@@ -54,3 +54,15 @@ def elapsed(seconds):
             if seconds < 1:
                 break
     return separator.join(time)
+
+
+@register.filter
+def own_run(runs, user):
+    return [r for r in runs if r.user == user.get_profile()]
+
+
+@register.filter
+def restrict(projects, user):
+    if not user.is_authenticated():
+        return [p for p in projects if p.public]
+    return [p for p in projects if p.is_allowed(user)]

@@ -20,7 +20,7 @@
     <div class="row-fluid">
       <div class="span7">
         <ul class="unstyled space-top">
-          <li><i class="icon-{{ box.project.co_authors|pluralize:"user,group" }}"></i> By
+          <li><i class="icon-{{ box.project.authors|length|pluralize:"user,group" }}"></i> By
             {% for author in box.project.authors %}
               {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
             {% endfor %}
@@ -40,21 +40,18 @@
           <li>
             <i class="icon-cogs"></i>
             <strong>{{ box.run_set.values|length }}</strong>
-            <span>run{{ box.run_set.values|pluralize }}</span>
+            <span>run{{ box.run_set.values|length|pluralize }}</span>
           </li>
           {% if box.avg_duration %}
           <li>
             <i class="icon-time"></i>
-            Avg. {{ box.avg_duration|elapsed }}
-            long
+            Avg. {{ box.avg_duration|elapsed }} long
           </li>
           {% endif %}
         </ul>
       </div>
     </div>
-    {% if box.description %}
-    <p>{{ box.description }}</p⎋>
-    {% endif %}
+    {% if box.description %}<p>{{ box.description }}</p>{% endif %}
   </div>
 </div>
 <div class="container space-top">

@@ -27,7 +27,6 @@ class ProjectAdmin(admin.ModelAdmin):
 
 class BoxParamInline(admin.TabularInline):
     model = BoxParam
-    prepopulated_fields = {'slug': ('name',)}
 
 
 class BoxAdmin(admin.ModelAdmin):

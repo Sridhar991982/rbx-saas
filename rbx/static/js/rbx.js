@@ -96,7 +96,7 @@ var RBX = (function () {
     var _navTabs = function () {
         $('a').on('click', function () {
             var href = $(this).attr('href')
-            if (href.startsWith('#') && $(href).hasClass('tab-pane')) {
+            if (href.substr(0, 1) === '#' && $(href).hasClass('tab-pane')) {
                 $('[href='+href+']').tab('show')
                 location.hash = '/' + href.substr(1)
                 return false
