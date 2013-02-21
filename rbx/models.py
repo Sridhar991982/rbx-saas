@@ -164,10 +164,10 @@ class Project(models.Model):
         return project_runs[:10]
 
     @staticmethod
-    def retrieve(username, project_slug, user):
+    def retrieve(username, project_slug, user, right=VIEW_RIGHT):
         owner = get_object_or_404(User, username=username).get_profile()
         project = get_object_or_404(Project, owner=owner, slug=project_slug)
-        if not project.is_allowed(user):
+        if not project.is_allowed(user, right):
             raise Http404
         return project
 
@@ -225,8 +225,8 @@ class Box(models.Model):
                                   status__gt=4).aggregate(Avg('duration'))['duration__avg']
 
     @staticmethod
-    def retrieve(username, project_slug, box_name, user):
-        project = Project.retrieve(username, project_slug, user)
+    def retrieve(username, project_slug, box_name, user, right=VIEW_RIGHT):
+        project = Project.retrieve(username, project_slug, user, right)
         return get_object_or_404(Box, project=project, name=box_name)
 
     class Meta:

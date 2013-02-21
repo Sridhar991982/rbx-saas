@@ -11,7 +11,7 @@ from django.template.defaultfilters import slugify
 from actstream.actions import is_following, follow, unfollow
 from uuid import uuid4
 
-from settings import STORAGE
+from settings import STORAGE, EDIT_RIGHT
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
     BoxForm, RunForm
 from rbx.models import Project, Box, Run
@@ -119,7 +119,7 @@ def project(request, username, project):
 @login_required
 def edit_project(request, username, project):
     status = 'edit'
-    project = Project.retrieve(username, project, request.user)
+    project = Project.retrieve(username, project, request.user, EDIT_RIGHT)
     if request.method == 'POST':
         form = EditProjectForm(request.POST, instance=project)
         if form.is_valid():
@@ -172,7 +172,7 @@ def box(request, username, project, box):
 @login_required
 def edit_box(request, username, project, box):
     status = 'edit'
-    box = Box.retrieve(username, project, box, request.user)
+    box = Box.retrieve(username, project, box, request.user, EDIT_RIGHT)
     if request.method == 'POST':
         form = BoxForm(request.POST,
                        instance=box,
