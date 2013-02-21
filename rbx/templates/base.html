@@ -63,7 +63,7 @@
               <li><a href="{% url "profile" user.username %}">
                 {% gravatar user.get_profile.gravatar 20 %} {{ user.get_profile }}</a></li>
               <li><a href="{% url "new_project" %}" rel="tooltip" title="Create a new project">
-                <i class="icon-edit icon-large visible-desktop"></i> <span class="hidden-desktop">New project</span>
+                <i class="icon-book icon-large visible-desktop"></i> <span class="hidden-desktop">New project</span>
               </a></li>
               <li><a href="{% url "settings_profile" %}" rel="tooltip" title="Account settings">
                 <i class="icon-wrench icon-large visible-desktop"></i> <span class="hidden-desktop">Settings</span>
