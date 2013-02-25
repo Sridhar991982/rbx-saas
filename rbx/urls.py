@@ -9,6 +9,8 @@ settings_urls = patterns('rbx.views',
 box_urls = patterns('rbx.views',
     url(r'^$', 'box', name='box'),
     url(r'^/edit$', 'edit_box', name='edit_box'),
+    url(r'^/param/(?P<param_id>\d+)$', 'param_form'),
+    url(r'^/param/(?P<param_type>[\w-]+)$', 'param_form'),
 )
 
 projects_urls = patterns('rbx.views',

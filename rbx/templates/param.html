@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{% title "Edit box parameter" %}{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1 class="space-top">Edit box parameter</h1>
+{% if success %}
+<div class="alert alert-success" id="fragment">
+    <p>Box parameter added successfully!</p>
+    <a href="#" data-action="reload" class="btn">Continue</a>
+    </p>
+</div>
+{% else %}
+{% crispy form %}
+{% endif %}
+</div>
+{% endblock %}

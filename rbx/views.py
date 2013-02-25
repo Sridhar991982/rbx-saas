@@ -1,4 +1,5 @@
 from os import makedirs
+from json import dumps
 from os.path import join, isdir
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
@@ -13,8 +14,8 @@ from uuid import uuid4
 
 from settings import STORAGE, EDIT_RIGHT
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
-    BoxForm, RunForm
-from rbx.models import Project, Box, Run
+    BoxForm, RunForm, ParamForm
+from rbx.models import Project, Box, Run, BoxParam
 
 
 def home_or_dashboard(request):
@@ -150,7 +151,7 @@ def star_project(request, username, project):
 def box(request, username, project, box):
     box = Box.retrieve(username, project, box, request.user)
     if request.method == 'POST' and request.user.is_authenticated():
-        launch = RunForm(request.POST)
+        launch = RunForm(request.POST, box=box, user=request.user)
         if launch.is_valid():
             try:
                 run = Run(box=box,
@@ -162,7 +163,7 @@ def box(request, username, project, box):
             except Exception:
                 messages.error(request, 'Oops, something wrong happened, please try again...')
     else:
-        launch = RunForm()
+        launch = RunForm(box=box, user=request.user)
     return render(request, 'box.html', {
         'box': box,
         'launch': launch,
@@ -184,8 +185,6 @@ def edit_box(request, username, project, box):
                 status = 'saved'
             except Exception:
                 status = 'error'
-        else:
-            print(form.errors)
     else:
         form = BoxForm(instance=box,
                        project=box.project,
@@ -195,6 +194,39 @@ def edit_box(request, username, project, box):
         'edit_form': form,
         'status': status,
     })
+
+
+@login_required
+def param_form(request, username, project, box, param_type=None, param_id=None):
+    box = Box.retrieve(username, project, box, request.user, EDIT_RIGHT)
+    param = None
+    new = None
+    success = False
+    if param_id:
+        try:
+            param = BoxParam.objects.get(pk=param_id)
+        except BoxParam.DoesNotExist:
+            return HttpResponse('Your request returned no results.')
+    else:
+        if param_type not in ('text', 'number'):
+            return HttpResponse('Your request cannot be completed.')
+        new = param_type
+    if request.method == 'POST':
+        form = ParamForm(request.POST, new=new, param=param, box=box, action=request.path)
+        if form.is_valid():
+            args = {'name': form.cleaned_data.pop('parameter_name'),
+                    'box': form.cleaned_data.pop('box'),
+                    'subtype': form.cleaned_data.pop('subtype'),
+                    'field_type': form.cleaned_data.pop('type'),
+                    'order': form.cleaned_data.pop('order')}
+            args['constraints'] = dumps(form.cleaned_data)
+            BoxParam(**args).save()
+            success = True
+        else:
+            print(form.errors)
+    else:
+        form = ParamForm(new=new, param=param, box=box, action=request.path)
+    return render(request, 'param.html', {'form': form, 'success': success})
 
 
 def set_run_status(request, secret, status):

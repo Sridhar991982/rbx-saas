@@ -204,7 +204,7 @@ class Box(models.Model):
     run_command = models.CharField(max_length=255)
     after_run = models.CharField(max_length=255, blank=True)
     lifetime = models.PositiveSmallIntegerField(default=3)
-    disabled = models.BooleanField(default=False)
+    allow_runs = models.BooleanField(default=True)
 
     def __unicode__(self):
         return '%s\'s %s box' % (self.project.name, self.name)
@@ -237,7 +237,11 @@ class Box(models.Model):
 class BoxParam(models.Model):
     name = models.SlugField()
     box = models.ForeignKey(Box)
+    field_type = models.CharField(max_length=32)
+    subtype = models.CharField(max_length=32)
     constraints = models.TextField()
+    order = models.PositiveSmallIntegerField()
+    css_class = models.CharField(max_length=128, blank=True)
 
     def __unicode__(self):
         return '%s\'s %s box param' % (self.box.project.name, self.name)
@@ -332,7 +336,7 @@ class Run(models.Model):
 
 class RunParam(models.Model):
     run = models.ForeignKey(Run, db_index=True)
-    box_param = models.ForeignKey(BoxParam, db_index=True)
+    box_param = models.ForeignKey(BoxParam)
     value = models.TextField()
 
     def __unicode__(self):

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load gravatar %}
 {% load url from future %}
 {% load crispy_forms_tags %}
 {% load rbx %}
@@ -9,6 +10,7 @@
 <div class="billboard">
   <div class="container">
     <h1 class="collapse-bottom">
+      <i class="icon-{% if box.project.public %}un{% endif %}lock icon-small"></i>
       {{ box }}
       {% if box.project|is_editable:user %}
       <a href="{{ box.edit_link }}"
@@ -25,7 +27,7 @@
               {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
             {% endfor %}
           </li>
-          <li><i class="icon-link"></i> <a href="{{ box.project.link }}">{{ box.project }}</a></li>
+          <li><i class="icon-book"></i> <a href="{{ box.project.link }}">{{ box.project }}</a></li>
           <li><i class="icon-beaker"></i> 
           {% if box.run_set.latest %}
           Last run {{ box.run_set.latest.launched|timesince }} ago
@@ -42,12 +44,14 @@
             <strong>{{ box.run_set.values|length }}</strong>
             <span>run{{ box.run_set.values|length|pluralize }}</span>
           </li>
-          {% if box.avg_duration %}
           <li>
             <i class="icon-time"></i>
+            {% if box.avg_duration %}
             Avg. {{ box.avg_duration|elapsed }} long
+            {% else %}
+            No avg. duration
+            {% endif %}
           </li>
-          {% endif %}
         </ul>
       </div>
     </div>
@@ -55,20 +59,74 @@
   </div>
 </div>
 <div class="container space-top">
-    <ul class="nav nav-tabs">
-        <li class="active"><a href="#launch"><i class="icon-beaker"></i>  Launch</a></li>
-        <li><a href="#pending"><i class="icon-cogs"></i> Pending</a></li>
-        <li><a href="#complete"><i class="icon-file"></i> Complete</a></li>
-    </ul>
-    <div class="tab-content">
-        <div class="tab-pane active" id="launch">
-            {% crispy launch %}
+    <div class="row-fluid">
+      <div class="span7">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#configure"><i class="icon-beaker"></i> Configure</a></li>
+            <li><a href="#details"><i class="icon-file"></i> Run details</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="configure">
+                {% crispy launch %}
+            </div>
+            <div class="tab-pane" id="details">
+                <div class="alert">
+                  Select a run in the above pane to view it details and results.
+                  <i class="icon-circle-arrow-right hidden-phone pull-right icon-large"></i>
+                  <i class="icon-circle-arrow-down visible-phone pull-right icon-large"></i>
+                </div>
+            </div>
         </div>
-        <div class="tab-pane" id="pending">
+      </div>
+      <div class="span5">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#all-runs" data-toggle="tab">
+          <i class="icon-cogs"></i> All runs</a></li>
+          <li><a href="#my-runs" data-toggle="tab">
+          <i class="icon-cog"></i> My runs</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="all-runs">
+              <ul class="unstyled runs">
+                {% for run in box.run_set.iterator %}
+                <li>
+                <a href="#" class="idx pull-right">#{{ run.pk }}</a>
+                {% gravatar run.user.gravatar 20 %} 
+                {{ run.user|profile_url:run.user.user.username }}, 
+                {{ run.launched|timesince }} ago<br />
+                <small class="space-left">
+                    {{ run.status_text }}{% if run.status > 3 %},
+                    in {{ run.duration|elapsed }}{% endif %}
+                </small>
+                </li>
+                {% empty %}
+                <li>No run for the moment.</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="tab-pane" id="my-runs">
+              <ul class="unstyled runs">
+                {% for run in box.run_set.iterator|own_run:user %}
+                <li>
+                <a href="#" class="idx pull-right">#{{ run.pk }}</a>
+                <i class="icon-time"></i> {{ run.launched|timesince }} ago<br />
+                <small class="space-left">
+                    {{ run.status_text }}{% if run.status > 3 %},
+                    in {{ run.duration|elapsed }}{% endif %}
+                </small>
+                </li>
+                {% empty %}
+                    {% if user.is_authenticated %}
+                    <li>You have never run this project.</li>
+                    {% else %}
+                    <li><a href="{% url "login" %}">Sign in</a> to run this project!</a></li>
+                    {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
         </div>
-        <div class="tab-pane" id="complete">
-        </div>
-  </div>
+      </div>
+    </div>
 </div>
 
 <div id="edit-modal" class="modal hide fade" tabindex="-1" role="dialog"
@@ -85,4 +143,11 @@
     <button class="btn btn-primary submit-change">Save changes</button>
   </div>
 </div>
+
+<script type="text/html" id="tpl_add_param_choice">
+    <ul class="squared" id="param_type">
+        <li><a href="#" data-type="number">Number</a></li>
+        <li><a href="#" data-type="text">Text</a></li>
+    </ul>
+</script>
 {% endblock %}

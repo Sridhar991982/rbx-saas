@@ -3,6 +3,7 @@ var RBX = (function () {
     var _init = function () {
         _tooltips()
         _dissmissSiteAlert()
+        _reloadPage()
 
         _modalFragment()
         _submitModalChanges()
@@ -12,6 +13,9 @@ var RBX = (function () {
 
         _navTabs()
         _activateTabFromHash()
+
+        _addParamChoices()
+        _submitParamEdit()
     }
 
     var _tooltips = function () {
@@ -49,10 +53,8 @@ var RBX = (function () {
                 modal.on('hidden', function () {
                     modal.off('hidden')
                     if (modal.find('input[name=reload-location]').val()) {
-                        console.log('Redirecting')
                         location.href = modal.find('input[name=reload-location]').val()
                     } else {
-                        console.log('Reloading')
                         location.reload()
                     }
                 })
@@ -115,8 +117,8 @@ var RBX = (function () {
         $('.new_box').on('click', function () {
             $(this).parent().find('.box-list').append($('#tpl_box_form').html())
             $(this).remove()
-            $('#id_source').parent().append($('#id_source_type').clone())
-            $('#div_id_source_type').remove()
+            $('#id_source_repository').parent().append($('#id_repository_type').clone())
+            $('#div_id_repository_type').remove()
             _selectToDropdown()
         })
     }
@@ -133,6 +135,42 @@ var RBX = (function () {
                 reloadField.attr('value', value)
             })
         }
+    }
+
+    var _addParamChoices = function () {
+        var add_button = $('#add_param')
+        add_button.on('click', function() {
+            return false
+        })
+        add_button.popover({placement: 'top',
+                                       html: true,
+                                       content: $('#tpl_add_param_choice').html()})
+
+        $(document).on('click', '#param_type a', function () {
+            $('#new_param').load(location.pathname + '/param/'
+                                    + $(this).attr('data-type') + ' #fragment', function() {
+                _selectToDropdown()
+            })
+            add_button.popover('hide')
+            add_button.parent().hide()
+            return false
+        })
+    }
+
+    var _submitParamEdit = function () {
+        $(document).on('click', '[name=save_param]', function () {
+            var form = $(this).parent().parent().parent()
+            $('#new_param').load(form.attr('action') + ' #fragment', form.serializeArray(),
+                _selectToDropdown()
+            )
+            return false
+        })
+    }
+
+    var _reloadPage = function () {
+        $(document).on('click', '[data-action=reload]', function () {
+            location.reload()
+        })
     }
 
     return {

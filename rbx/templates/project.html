@@ -12,7 +12,7 @@
 <div class="billboard">
   <div class="container">
     <h1 class="collapse-bottom">
-      <i class="icon-{% if project.public %}un{% endif %}lock"></i>
+      <i class="icon-{% if project.public %}un{% endif %}lock icon-small"></i>
       {{ project.name }}
       {% if project|is_editable:user %}
       <a href="{{ project.edit_link }}"
@@ -24,12 +24,26 @@
     <div class="row-fluid">
       <div class="span7">
         <div class="btn-group">
-          <button class="btn"><i class="icon-cog"></i> Run now</button>
-          <a class="btn" href="{{ project.star_link }}">
-            <i class="icon-star"></i>
-            {% if user|is_following:project %}Unstar
-            {% else %}Star{% endif %}
-          </a>
+            <a class="btn" href="{{ project.star_link }}">
+                <i class="icon-star{% if user|is_following:project %}-empty{% endif %}"></i>
+                {% if user|is_following:project %}Uns{% else %}s{% endif %}tar
+            </a>
+            {% if project.boxes|length == 1 %}
+              {% for box in project.boxes %}
+                <a class="btn" href="{{ box.link }}">
+                <i class="icon-cog"></i> Run now 
+                </a>
+              {% endfor %}
+            {% elif project.boxes|length > 1 %}
+            <button class="btn dropdown-toggle" data-toggle="dropdown">
+              <i class="icon-cog"></i> Run now 
+            </button>
+            <ul class="dropdown-menu">
+              {% for box in project.boxes %}
+              <li><a href="{{ box.link }}">{{ box.name }} box</a></li>
+              {% endfor %}
+            </ul>
+            {% endif %}
         </div>
         <ul class="unstyled space-top">
           <li><i class="icon-{{ project.authors|length|pluralize:"user,group" }}"></i> By
@@ -173,11 +187,10 @@
               {{ run.user|profile_url:run.user.user.username }}, 
               {{ run.launched|timesince }} ago<br />
               <small class="space-left">
-                    {{ run.status_text }},
-                    using <a href="{{ run.box.link }}">
-                    {{ run.box.name }} box</a>{% if run.status > 3 %},
-                    in {{ run.duration|elapsed }}
-                    {% endif %}
+                {{ run.status_text }},
+                using <a href="{{ run.box.link }}">
+                {{ run.box.name }} box</a>{% if run.status > 3 %},
+                in {{ run.duration|elapsed }}{% endif %}
               </small>
             </li>
             {% empty %}
@@ -195,8 +208,7 @@
                 {{ run.status_text }}, 
                 using <a href="{{ run.box.link }}">
                 {{ run.box.name }} box</a>{% if run.status > 3 %},
-                in {{ run.duration|elapsed }}
-                {% endif %}
+                in {{ run.duration|elapsed }}{% endif %}
               </small>
             </li>
             {% empty %}
