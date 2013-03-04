@@ -75,6 +75,7 @@ INSTALLED_APPS = (
     'markdown_deux',
     'rbx',
     'actstream',
+    'south',
 )
 
 GRAVATAR_DEFAULT_URL = 'mm'
