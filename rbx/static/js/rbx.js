@@ -15,7 +15,9 @@ var RBX = (function () {
         _activateTabFromHash()
 
         _addParamChoices()
+        _loadParamEdit()
         _submitParamEdit()
+        _confirmAction()
     }
 
     var _tooltips = function () {
@@ -25,6 +27,7 @@ var RBX = (function () {
             else
                 $('a[rel="tooltip"]').tooltip('destroy')
         }).trigger('resize')
+        $('form i').tooltip()
     }
 
     var _dissmissSiteAlert = function () {
@@ -143,12 +146,12 @@ var RBX = (function () {
             return false
         })
         add_button.popover({placement: 'top',
-                                       html: true,
-                                       content: $('#tpl_add_param_choice').html()})
+                            html: true,
+                            content: $('#tpl_add_param_choice').html()})
 
         $(document).on('click', '#param_type a', function () {
             $('#new_param').load(location.pathname + '/param/'
-                                    + $(this).attr('data-type') + ' #fragment', function() {
+                                 + $(this).attr('data-type') + ' #fragment', function() {
                 _selectToDropdown()
             })
             add_button.popover('hide')
@@ -158,18 +161,44 @@ var RBX = (function () {
     }
 
     var _submitParamEdit = function () {
-        $(document).on('click', '[name=save_param]', function () {
+        $(document).on('click', '#configure .save_param', function () {
             var form = $(this).parent().parent().parent()
-            $('#new_param').load(form.attr('action') + ' #fragment', form.serializeArray(),
-                _selectToDropdown()
-            )
+            form.parent().load(form.attr('action') + ' #fragment', form.serializeArray(), _selectToDropdown)
             return false
         })
     }
 
+    var _loadParamEdit = function () {
+        $('.edit-param').on('click', function () {
+            $(this).closest('.parameter').load(location.pathname + '/param/'
+                                               + $(this).closest('.parameter').attr('data-param')
+                                               + ' #fragment', function() {
+                _selectToDropdown()
+            })
+        })
+    }
+
     var _reloadPage = function () {
-        $(document).on('click', '[data-action=reload]', function () {
+        $(document).on('click', '.reload', function () {
             location.reload()
+            return false
+        })
+    }
+
+    var _confirmAction = function () {
+        $(document).on('click', '.confirm-action', function () {
+            if (!$(this).hasClass('warmed')) {
+                $(this).addClass('btn-danger').addClass('warmed').val($(this).attr('data-confirm'))
+                return false
+            }
+
+            var id = $(this).closest('.parameter').attr('data-param')
+            console.log(id)
+            if (id !== undefined)
+                $.get(location.pathname + '/param/delete/' + id, function () {
+                    location.reload()
+                })
+            return false
         })
     }
 

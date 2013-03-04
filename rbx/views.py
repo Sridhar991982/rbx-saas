@@ -15,7 +15,7 @@ from uuid import uuid4
 from settings import STORAGE, EDIT_RIGHT
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
     BoxForm, RunForm, ParamForm
-from rbx.models import Project, Box, Run, BoxParam
+from rbx.models import Project, Box, Run, BoxParam, RunParam
 
 
 def home_or_dashboard(request):
@@ -158,9 +158,16 @@ def box(request, username, project, box):
                           user=request.user.get_profile(),
                           status=1,
                           secret_key=str(uuid4()))
+                box_param = BoxParam.objects.filter(box=box)
                 run.save()
+                for param, value in launch.cleaned_data.items():
+                    RunParam(value=(value or ''),
+                             run=run,
+                             box_param=box_param.get(name=param)).save()
                 run.start()
+                messages.success(request, 'Run successfully launched!')
             except Exception:
+                raise
                 messages.error(request, 'Oops, something wrong happened, please try again...')
     else:
         launch = RunForm(box=box, user=request.user)
@@ -217,16 +224,25 @@ def param_form(request, username, project, box, param_type=None, param_id=None):
             args = {'name': form.cleaned_data.pop('parameter_name'),
                     'box': form.cleaned_data.pop('box'),
                     'subtype': form.cleaned_data.pop('subtype'),
+                    'css_class': form.cleaned_data['type'] == 'number' and 'input-mini' or '',
                     'field_type': form.cleaned_data.pop('type'),
                     'order': form.cleaned_data.pop('order')}
+            if 'pk' in form.cleaned_data:
+                args['pk'] = form.cleaned_data.pop('pk')
             args['constraints'] = dumps(form.cleaned_data)
             BoxParam(**args).save()
             success = True
-        else:
-            print(form.errors)
     else:
         form = ParamForm(new=new, param=param, box=box, action=request.path)
-    return render(request, 'param.html', {'form': form, 'success': success})
+    return render(request, 'edit_param.html', {'form': form, 'success': success})
+
+
+@login_required
+def delete_param(request, username, project, box, param_id):
+    box = Box.retrieve(username, project, box, request.user, EDIT_RIGHT)
+    param = get_object_or_404(BoxParam, pk=param_id)
+    param.delete()
+    return HttpResponse('{status: 0}')
 
 
 def set_run_status(request, secret, status):

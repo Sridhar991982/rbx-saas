@@ -1,3 +1,4 @@
+import re
 from json import loads
 from django import forms
 from django.db.models import Max
@@ -184,15 +185,22 @@ class RunForm(forms.Form):
         user = kwargs.pop('user')
         super(RunForm, self).__init__(*args, **kwargs)
         params = BoxParam.objects.filter(box=box).order_by('order')
+        can_edit = box.project.is_allowed(user, EDIT_RIGHT)
         layout = []
         controls = []
         for param in params:
-            self.fields[param.name] = getattr(forms, param.subtype)(**loads(param.constraints))
-            layout.append(Field(param.name, css_class=param.css_class))
+            prop = self.build_help(param)
+            if can_edit:
+                prop['help_text'] += ('<i class="icon-wrench space-left edit-param"' +
+                                      ' data-toggle="tooltip"' +
+                                      ' title="Edit"></i>')
+            self.fields[param.name] = getattr(forms, param.subtype)(**prop)
+            layout.append(Div(Field(param.name, css_class=param.css_class),
+                              css_class="parameter", data_param="%d" % param.pk))
         if not len(layout):
             layout.append(HTML('<p><small>No parameters available.</small></p>'))
         layout.append(Div(id='new_param'))
-        if box.project.is_allowed(user, EDIT_RIGHT):
+        if can_edit:
             controls.append(HTML('<a href="{{ box.link }}/param/text" ' +
                                  'id="add_param" data-title="%s" class="btn space-right">%s</a>'
                                  % ('Parameter type', 'Add parameter')))
@@ -204,9 +212,27 @@ class RunForm(forms.Form):
             layout.append(Div(Div(*controls, css_class='controls'), css_class='controls-group'))
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal require'
-        self.helper.html5_required = True
         self.helper.help_text_inline = True
+        self.helper.html5_required = True
         self.helper.layout = Layout(*layout)
+
+    def camelcase2separator(self, name, separator=' '):
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1%s\2' % separator, name)
+        return re.sub('([a-z0-9])([A-Z])', r'\1%s\2' % separator, s1).lower()
+
+    def build_help(self, param):
+        ''' Add details on field constraints and type
+        '''
+        help_text = [self.camelcase2separator(param.subtype)]
+        constraints = loads(param.constraints)
+        for name, value in constraints.items():
+            if (name not in ('help_text', 'subtype', 'required', 'initial')
+                    and value is not None and value != ''):
+                help_text.append('%s: %s' % (name.replace('_', ' '), str(value)))
+        constraints['help_text'] = ('<i class="icon-info-sign param-info" data-toggle="tooltip"' +
+                                    ' title="%s"></i> %s' % (', '.join(help_text),
+                                                             constraints.get('help_text', '')))
+        return constraints
 
 class ParamForm(forms.Form):
 
@@ -248,15 +274,19 @@ class ParamForm(forms.Form):
         else:
             self.render_new(new)
         self.layout.append('required')
-        self.layout.append(Div(Div(Button('rm_param', 'Delete parameter'),
-                                   Submit('save_param', 'Save parameter'),
+        self.layout.append(Div(Div(Button('delete_param', 'Delete parameter',
+                                          css_class="delete_param confirm-action",
+                                          data_confirm="Yes delete parameter!"),
+                                   Submit('save_param', 'Save parameter',
+                                          css_class="save_param"),
                                    css_class='controls'),
                                css_class='controls-group'))
         self.helper.layout = Layout(*self.layout)
 
     def render_existing(self, param):
         const = loads(param.constraints)
-        self.fields['parameter_name'] = forms.CharField(initial=param.name)
+        self.fields['pk'] = forms.IntegerField(initial=param.pk, widget=forms.HiddenInput())
+        self.fields['parameter_name'] = forms.SlugField(initial=param.name)
         self.fields['initial'] = forms.CharField(required=False,
                                        initial=const.get('initial'))
         self.fields['required'] = forms.BooleanField(initial=const.get('required', True),
@@ -264,10 +294,11 @@ class ParamForm(forms.Form):
         self.fields['help_text'] = forms.CharField(required=False,
                                               initial=const.get('help_text', ''),
                                               widget=forms.Textarea())
+        self.layout.append('pk')
         getattr(self, 'render_%s' % param.field_type)(const)
 
     def render_new(self, param_type):
-        self.fields['parameter_name'] = forms.CharField()
+        self.fields['parameter_name'] = forms.SlugField()
         self.fields['initial'] = forms.CharField(required=False)
         self.fields['required'] = forms.BooleanField(initial=True, required=False)
         self.fields['help_text'] = forms.CharField(required=False,
