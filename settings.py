@@ -46,6 +46,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
@@ -56,6 +57,8 @@ ACTSTREAM_SETTINGS = {
 }
 
 ROOT_URLCONF = 'urls'
+
+X_FRAME_OPTIONS = 'DENY'
 
 AUTH_PROFILE_MODULE = 'rbx.UserProfile'
 
