@@ -75,8 +75,9 @@ INSTALLED_APPS = (
     'markdown_deux',
     'rbx',
     'actstream',
-    'doc',
 )
+
+GRAVATAR_DEFAULT_URL = 'mm'
 
 VIEW_RIGHT = 0
 EDIT_RIGHT = 1
