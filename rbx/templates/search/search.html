@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% load gravatar %}
+{% load url from future %}
+{% load crispy_forms_tags %}
+{% load activity_tags %}
+{% load rbx %}
+{% load highlight %}
+
+{% block title %}{% title "Search" %}{% endblock %}
+
+{% block content %}
+<div class="billboard tinyboard">
+  <div class="container">
+    <form method="GET" action="{% url "haystack_search" %}">
+      <div class="row-fluid">
+        <div class="offset2 span2">
+          <h1 class="collapse-bottom right">Search</h1>
+        </div>
+        <div class="span4 space-top">
+            <input class="input-block-level" id="id-input-q" name="q" type="text"
+            {% if query %}value="{{ query }}"{% endif %}>
+        </div>
+        <div class="span2 space-top">
+           <button class="btn" id="search-button" type="submit">Search in the box</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="container space-top row-fluid">
+<div class="offset3 span6">
+{% if query %}
+    {% for result in page.object_list|hide:user %}
+        {% if result.content_type == 'rbx.userprofile' %}
+        <div class="media border-bottom">
+            <div class="pull-left space-right">
+            {% gravatar result.object.gravatar 64 %}
+            </div>
+            <div class="media-body">
+                <h4 class="media-heading">{{ result.object|profile_url:result.object.user.username }}</h4>
+                <p>{{ result.object.projects|restrict:user|length }} project{{ result.object.projects|restrict:user|length|pluralize }},
+                {{ result.object.starred|restrict:user|length }} starred<br />
+                {{ result.object.following|length }} following,
+                {{ result.object.followers|length }} follower{{ result.object.followers|length|pluralize }}
+                </p>
+            </div>
+        </div>
+        {% elif result.content_type == 'rbx.project' %}
+            {% if result.object|is_visible:user %}
+            <div class="media border-bottom">
+            <h4 class="media-heading">
+                <i class="icon-{% if result.object.public %}un{% endif %}lock"></i>
+                <a href="{{ result.object.link }}">{{ result.object.name }}</a>
+                {% if user.is_authenticated %}
+                  {% if user|is_following:result.object %}
+                    <i class="icon-star small gray" rel="tooltip" title="You've starred this project"></i>
+                  {% endif %}
+                {% endif %}
+            </h4>
+            <p>{{ project.runs|length }} run{{ project.runs|length|pluralize }},
+               {{ result.object.boxes|length }} box{{ result.object.stargazers|length|pluralize:"es" }},
+               {{ result.object.stargazers|length }} stargazer{{ result.object.stargazers|length|pluralize }}
+            </p>
+            {% if result.object.description %}
+            <p>{{ result.object.description|truncatewords:50 }}</p>
+            {% endif %}
+            {% endif %}
+            </div>
+        {% else %}
+            <div class="media border-bottom">
+            <p>{{ result.object }}</p>
+            </div>
+        {% endif %}
+    {% empty %}
+        <p class="hero-unit"><i class="icon-search"></i> We couldn't find any thing matching "{{ query }}".</p>
+    {% endfor %}
+
+    {% if page.has_previous or page.has_next %}
+    <div class="btn-group">
+        {% if page.has_previous %}
+            <a class="btn" href="?q={{ query }}&amp;page={{ page.previous_page_number }}">
+            &laquo; Previous
+            </a>
+        {% endif %}
+        {% if page.has_next %}
+            <a class="btn" href="?q={{ query }}&amp;page={{ page.next_page_number }}">
+            Next &raquo;
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    </div>
+{% else %}
+    <p class="hero-unit"><i class="icon-search"></i> Search across Run in the Box for projects and user.</p>
+{% endif %}
+</div>
+</div>
+{% endblock %}

@@ -1,7 +1,9 @@
 Django==1.5
 Fabric==1.5.3
 South==0.7.6
+Whoosh==2.4.1
 django-crispy-forms==1.2.3
+django-haystack==1.2.7
 django-markdown-deux==1.0.3
 django-simple-gravatar==1.0.1
 docutils==0.10

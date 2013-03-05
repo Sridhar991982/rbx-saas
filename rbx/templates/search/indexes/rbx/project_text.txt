@@ -1,0 +1,3 @@
+{{ object.name }}
+{{ object.authors }}
+{{ object.description|truncatewords:30 }}

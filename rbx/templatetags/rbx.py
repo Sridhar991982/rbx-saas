@@ -66,3 +66,8 @@ def restrict(projects, user):
     if not user.is_authenticated():
         return [p for p in projects if p.public]
     return [p for p in projects if p.public or p.is_allowed(user)]
+
+
+@register.filter
+def hide(obj, user):
+    return [o for o in obj if not hasattr(o.object, 'is_allowed') or o.object.is_allowed(user)]

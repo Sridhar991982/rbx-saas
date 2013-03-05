@@ -28,6 +28,7 @@ var RBX = (function () {
                 $('a[rel="tooltip"]').tooltip('destroy')
         }).trigger('resize')
         $('form i').tooltip()
+        $('.media-heading i').tooltip({placement: 'right'})
     }
 
     var _dissmissSiteAlert = function () {

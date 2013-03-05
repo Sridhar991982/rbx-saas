@@ -117,6 +117,8 @@ class Project(models.Model):
         return '%s project' % self.name
 
     def is_allowed(self, user, right=VIEW_RIGHT):
+        if not self.public and not user.is_authenticated():
+            return False
         if self.public and right == VIEW_RIGHT:
             return True
         if not user.is_authenticated() and right != VIEW_RIGHT:

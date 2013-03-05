@@ -46,17 +46,20 @@
           <div class="nav-collapse collapse">
             <ul class="nav">
             {% if user.is_authenticated %}
+              {% url "haystack_search" as search_url %}
+              {% if request.path != search_url %}
               <li class="divider-vertical"></li>
               <li>
-                <form action="{% url "search" %}" class="input-append navbar-search">
+                <form method="GET" action="{{ search_url }}" class="input-append navbar-search">
                     <input class="span3" id="search" type="text"
-                            placeholder="Search run in the box" />
+                            placeholder="Search run in the box" name="q" />
                     <button class="btn" type="submit">
                       <i class="icon-search"><span class="hide">Go!</span></i>
                     </button>
                 </form>
               </li>
               <li class="divider-vertical"></li>
+            {% endif %}
               <li><a href="{% url "explore" %}">Explore</a></li>
             </ul>
             <ul class="nav pull-right">
@@ -73,7 +76,7 @@
               </a></li>
             {% else %}
               <li><a href="{% url "explore" %}">Explore</a></li>
-              <li><a href="{% url "search" %}">Search</a></li>
+              <li><a href="{% url "haystack_search" %}">Search</a></li>
             </ul>
             <ul class="nav pull-right">
               <li><a href="{% url "home" %}"><i class="icon-edit"></i> Request invitation</a></li>
