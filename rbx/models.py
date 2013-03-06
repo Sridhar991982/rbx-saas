@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from django.db import models
 from django.http import Http404
 from django.db.models import Avg
@@ -67,7 +67,6 @@ target = "hdd"
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     company = models.CharField(max_length=100, blank=True)
-    school = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
     gravatar_email = models.EmailField(blank=True)
     location = models.CharField(max_length=100, blank=True)
@@ -102,6 +101,19 @@ class UserProfile(models.Model):
     def activity(self):
         #actor_stream(user.get_profile())
         return None
+
+    def stats(self):
+        stats = {}
+        total_runs = Run.objects.filter(user=self)
+        today = date.today()
+        start_week = today - timedelta(today.weekday())
+        end_week = start_week + timedelta(7)
+        week_runs = total_runs.filter(started__range=[start_week, end_week])
+        stats['total_runs'] = len(total_runs)
+        stats['total_time'] = total_runs.filter(status__gt=4).aggregate(Avg('duration'))['duration__avg'] or 0
+        stats['week_runs'] = len(week_runs)
+        stats['week_time'] = week_runs.filter(status__gt=4).aggregate(Avg('duration'))['duration__avg'] or 0
+        return stats
 
 
 class Project(models.Model):

@@ -4,9 +4,11 @@ from django import forms
 from django.db.models import Max
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div, HTML, Button
+from crispy_forms.bootstrap import PrependedText
 
 from settings import EDIT_RIGHT
 from rbx.models import UserProfile, Project, Invitation, Box, \
@@ -330,3 +332,71 @@ class ParamForm(forms.Form):
                                  placeholder='Optional'))
         self.layout.append(Field('max_value', css_class='input-small',
                                  placeholder='Optional'))
+
+
+class ProfileForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        profile = kwargs.pop('profile')
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        self.layout = []
+        fields = (('full_name', profile.user.first_name, 'user'),
+                  ('company', profile.company, 'briefcase', None, '(or School)'),
+                  ('website', profile.website, 'globe', forms.URLField),
+                  ('location', profile.location, 'map-marker'),
+                  ('gravatar_email', profile.gravatar_email, 'picture', forms.EmailField, '(private)'))
+        for field in fields:
+            self.build_field(*field)
+        self.helper = FormHelper()
+        self.helper.html5_required = True
+        self.helper.help_text_inline = True
+        self.helper.form_action = reverse('settings_profile')
+        self.layout.append(Submit('update_profile', 'Update profile'))
+        self.helper.layout = Layout(*self.layout)
+
+    def build_field(self, name, initial, icon=None, field_class=None, help_text=''):
+        if not field_class:
+            field_class = forms.CharField
+        placeholder = name.replace('_', ' ').capitalize()
+        self.fields[name] = field_class(initial=initial, required=False, label='')
+        if icon:
+            self.layout.append(PrependedText(name, self.icon(icon),
+                                             placeholder='%s %s' % (placeholder, help_text),
+                                             css_class='input-xlarge'))
+        else:
+            self.layout.append(Field(name, placeholder='%s %s' % (placeholder, help_text)))
+
+    def icon(self, name):
+        return '<i class="icon-%s"></i> ' % name
+
+
+class PasswordForm(forms.Form):
+
+    current_password = forms.CharField(widget=forms.PasswordInput())
+    new_password = forms.CharField(widget=forms.PasswordInput())
+    repeat_new_password = forms.CharField(widget=forms.PasswordInput())
+
+    def __init__(self, *args, **kwargs):
+        self.username = kwargs.pop('username')
+        super(PasswordForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.html5_required = True
+        self.helper.help_text_inline = True
+        self.helper.form_action = reverse('settings_profile')
+        self.helper.layout = Layout('current_password', 'new_password', 'repeat_new_password',
+                                    Div(Div(Submit('update_password', 'Update password'),
+                                            css_class='controls'),
+                                        css_class='controls-group'))
+
+    def clean_current_password(self):
+        user = User.objects.get(username=self.username)
+        if not user.check_password(self.cleaned_data['current_password']):
+            raise forms.ValidationError('Current password mismatch')
+        return self.cleaned_data['current_password']
+
+    def clean(self):
+        # TODO; use cracklib to check strength
+        if self.cleaned_data['new_password'] != self.cleaned_data['repeat_new_password']:
+            raise forms.ValidationError('New passwords mismatch')
+        return self.cleaned_data

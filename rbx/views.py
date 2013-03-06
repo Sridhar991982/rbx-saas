@@ -3,7 +3,7 @@ from json import dumps
 from os.path import join, isdir
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, Http404
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -12,9 +12,9 @@ from django.template.defaultfilters import slugify
 from actstream.actions import is_following, follow, unfollow
 from uuid import uuid4
 
-from settings import STORAGE, EDIT_RIGHT
+from settings import STORAGE, VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, COMMON_ERROR_MSG
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
-    BoxForm, RunForm, ParamForm
+    BoxForm, RunForm, ParamForm, ProfileForm, PasswordForm
 from rbx.models import Project, Box, Run, BoxParam, RunParam
 
 
@@ -48,6 +48,44 @@ def dashboard(request):
 def profile(request, username):
     user = get_object_or_404(User, username=username).get_profile()
     return render(request, 'profile.html', {'profile': user})
+
+
+@login_required
+def profile_settings(request):
+    user = User.objects.get(username=request.user)
+    if request.method == 'POST' and 'update_password' in request.POST:
+        password_form = PasswordForm(request.POST, username=request.user)
+        if password_form.is_valid():
+            try:
+                user.set_password(password_form.cleaned_data['new_password'])
+                user.save()
+                messages.success(request, 'Password successfully updated')
+                return HttpResponseRedirect(reverse('settings_profile'))
+            except:
+                raise
+                messages.error(request, COMMON_ERROR_MSG)
+    else:
+        password_form = PasswordForm(username=request.user)
+    if request.method == 'POST' and'update_profile' in request.POST:
+        profile_form = ProfileForm(request.POST, profile=request.user.get_profile())
+        if profile_form.is_valid():
+            try:
+                user.first_name = profile_form.cleaned_data.pop('full_name')
+                user.save()
+                profile = user.get_profile()
+                for field, value in profile_form.cleaned_data.items():
+                    setattr(profile, field, value)
+                profile.save()
+                messages.success(request, 'Profile successfully updated')
+                return HttpResponseRedirect(reverse('settings_profile'))
+            except:
+                raise
+                messages.error(request, COMMON_ERROR_MSG)
+    else:
+        profile_form = ProfileForm(profile=request.user.get_profile())
+    return render(request, 'profile_settings.html', {'profile_form': profile_form,
+                                                     'password_form': password_form,
+                                                     'stats': user.get_profile().stats()})
 
 
 @login_required
@@ -102,8 +140,8 @@ def project(request, username, project):
                 new_box = box_form.save()
                 messages.success(request, '%s box successfully saved' % new_box.name)
                 return HttpResponseRedirect(new_box.link())
-            except Exception:
-                messages.error(request, 'Oops, something wrong happened, please try again...')
+            except:
+                messages.error(request, COMMON_ERROR_MSG)
                 return HttpResponseRedirect(project.link())
     else:
         box_form = BoxForm(project=project,
@@ -168,7 +206,7 @@ def box(request, username, project, box):
                 messages.success(request, 'Run successfully launched!')
             except Exception:
                 raise
-                messages.error(request, 'Oops, something wrong happened, please try again...')
+                messages.error(request, COMMON_ERROR_MSG)
     else:
         launch = RunForm(box=box, user=request.user)
     return render(request, 'box.html', {
@@ -243,6 +281,13 @@ def delete_param(request, username, project, box, param_id):
     param = get_object_or_404(BoxParam, pk=param_id)
     param.delete()
     return HttpResponse('{status: 0}')
+
+
+@login_required
+def project_right(request, username, project, right, user):
+    project = Project.retrieve(username, project, request.user, ADMIN_RIGHT)
+    if right not in (VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT):
+        raise Http404
 
 
 def set_run_status(request, secret, status):

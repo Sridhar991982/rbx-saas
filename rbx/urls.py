@@ -2,7 +2,7 @@ from django.conf.urls.defaults import patterns, url, include
 from django.views.generic import TemplateView
 
 settings_urls = patterns('rbx.views',
-    url(r'^profile$', 'home', name='settings_profile'),
+    url(r'^profile$', 'profile_settings', name='settings_profile'),
     url(r'^create-team$', 'home', name='settings_create_team'),
 )
 
@@ -16,8 +16,9 @@ box_urls = patterns('rbx.views',
 
 projects_urls = patterns('rbx.views',
     url(r'^$', 'project', name='project'),
-    url(r'^/edit$', 'edit_project', name='edit_project'),
-    url(r'^/star$', 'star_project', name='star_project'),
+    url(r'^/action/edit$', 'edit_project', name='edit_project'),
+    url(r'^/action/star$', 'star_project', name='star_project'),
+    url(r'^/action/right/(?P<right>\d+)/(?P<user>\w+)$', 'project_right', name='project_right'),
     url(r'^/(?P<box>[\w-]+)', include(box_urls)),
 )
 

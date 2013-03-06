@@ -18,9 +18,9 @@
       <div class="span9">
         <h1 class="collapse-bottom">{{ profile }}
           {% if user == profile.user %}
-          <a href="{% url "settings_profile" %}" rel="tooltip" title="Edit your profile"
+          <a href="{% url "settings_profile" %}" rel="tooltip" title="Account settings"
           class="small space-left undecorated">
-          <i class="icon-wrench icon-small"></i> <span class="tiny hidden-desktop">Edit profile</span></a>
+          <i class="icon-wrench icon-small"></i> <span class="tiny hidden-desktop">Account settings</span></a>
           {% elif user.is_authenticated %}
           <a href="{% url "follow" profile.user.username %}" rel="tooltip" 
               title="{% if user|is_following:profile %}Unf{% else %}F{% endif %}ollow {{ profile }}"
@@ -33,14 +33,11 @@
         <div class="row-fluid">
           <div class="span7">
             <ul class="unstyled">
-              {% if profile.school  %}
-              <li><i class="icon-briefcase"></i> Studies at {{ profile.school }}</li>
-              {% endif %}
               {% if profile.company  %}
-              <li><i class="icon-briefcase"></i> Works at {{ profile.company }}</li>
+              <li><i class="icon-briefcase"></i> {{ profile.company }}</li>
               {% endif %}
               {% if profile.location  %}
-              <li><i class="icon-map-marker"></i> Lives in {{ profile.location }}</li>
+              <li><i class="icon-map-marker"></i> {{ profile.location }}</li>
               {% endif %}
               {% if profile.website  %}
               <li><i class="icon-globe"></i> <a href="{{ profile.website }}">{{ profile.website }}</a></li>

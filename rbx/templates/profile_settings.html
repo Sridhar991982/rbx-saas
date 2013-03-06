@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load gravatar %}
+{% load activity_tags %}
+{% load url from future %}
+{% load rbx %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% title "Account settings" %}{% endblock %}
+
+{% block content %}
+<div class="billboard">
+  <div class="container">
+    <h1>Account settings</h1>
+    <div class="row-fluid">
+      <div class="span3 center">
+        <img src="{% gravatar_url user.get_profile.gravatar 170 %}" 
+             alt="{{ user.get_profile }}'s picture" class="img-polaroid"
+             width="170" height="170" />
+        <p>
+          Change your avatar at <a href="http://gravatar.com">Gravatar.com</a>
+        </p>
+      </div>
+      <div class="span9">
+        {% crispy profile_form %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container space-top">
+  <div class="row-fluid">
+    <div class="span7">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#"><i class="icon-key"></i> Update password</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active">
+          {% crispy password_form %}
+        </div>
+      </div>
+    </div>
+    <div class="span5">
+      <ul class="nav nav-tabs">
+          <li class="active"><a href="#"><i class="icon-dashboard"></i> Statistics</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active">
+            <dl class="dl-horizontal">
+              <dt>Total run number</dt>
+              <dd>{{ stats.total_runs }}</dd>
+              <dt>Total run time</dt>
+              <dd>{{ stats.total_time|elapsed }}</dd>
+              <dt>Week run number<dt>
+              <dd>{{ stats.week_runs }}</dd>
+              <dt>Week run time</dt>
+              <dd>{{ stats.week_time|elapsed }}</dd>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

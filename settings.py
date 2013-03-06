@@ -84,6 +84,8 @@ INSTALLED_APPS = (
     'south',
 )
 
+COMMON_ERROR_MSG = 'Oops, something wrong happened, please try again...'
+
 GRAVATAR_DEFAULT_URL = 'mm'
 
 VIEW_RIGHT = 0

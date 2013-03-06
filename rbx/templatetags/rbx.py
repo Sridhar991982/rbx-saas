@@ -45,6 +45,8 @@ def elapsed(seconds):
              (suffixes[3], 60 * 60),
              (suffixes[4], 60),
              (suffixes[5], 1)]
+    if seconds == 0:
+        return str(seconds) + suffixes[-1]
     for suffix, length in parts:
         value = int(seconds / length)
         if value > 0:
