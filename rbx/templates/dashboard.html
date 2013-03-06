@@ -3,39 +3,75 @@
 {% load url from future %}
 
 {% block content %}
-<div class="container space-top">
-  <div class="row-fluid">
-    <div class="span8">
-      <h1>News feed</h1>
-
-      {% for event in stream %}
-      <div class="stream">
-        <p class="pull-left space-right">
-          {% gravatar event.actor.gravatar 32 %}
-        </p>
-        <p class="no-margin">
-          {{ event.actor|profile_url:event.actor.user.username }}
-          {{ event.verb }} {{ event.target }}
-          <small>{{ event.timesince }} ago</small>
-        </p>
-      </div>
-      {% empty %}
-      <p>Start following some user to get some news.</p>
-      {% endfor %}
-
-    </div>
-    <div class="span4">
-      <h1>Projects</h1>
-      <ul class="unstyled projects">
-        {% for project in projects %}
-        <li><i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
-          <a href="{% url "project" project.owner.user.username project.slug %}">{{ project.name }}</a>
+<div class="billboard">
+  <div class="container">
+    <h2><i class="icon-cogs"></i> Latest runs</h2>
+    <div class="row-fluid">
+      <div class="span7">
+        <ul class="unstyled">
+        {% for run in user.get_profile.runs|slice:":5" %}
+        <li>
+            <a href="{{ run.link }}">{{ run.box }} #{{ run.pk }}</a>,
+            <small>{{ run.launched|timesince }} ago</small><br />
+            <small class="space-left">
+            {{ run.status_text }}{% if run.status > 3 %},
+            in {{ run.duration|elapsed }}{% endif %}
+            </small>
         </li>
         {% empty %}
-        <li>No project yet, try <a href="{% url "new_project" %}">create one</a>!</li>
+        <li>No runs for now, try <a href="{% url "explore" %}">some projects</a>!</li>
         {% endfor %}
-      </ul>
+        </ul>
+      </div>
+      <div class="span2">
+        <ul class="stats unstyled">
+          <li>
+            <i class="icon-beaker"></i>
+            <strong>{{ running }}</strong>
+            <span>run{{ stats.week_runs|pluralize }} ongoing</span>
+          </li>
+          <li>
+            <i class="icon-cogs"></i>
+            <strong>{{ stats.week_runs }}</strong>
+            <span>run{{ stats.week_runs|pluralize }} this week</span>
+          </li>
+          <li>
+            <i class="icon-time"></i>
+            <strong>{{ stats.week_time|elapsed }}</strong>
+            <span> of run this week</span>
+          </li>
+        </ul>
+      </div>
     </div>
+  </div>
+</div>
+<div class="container space-top">
+  <div class="row-fluid">
+    <div class="span7">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#"><i class="icon-bullhorn"></i> News feed</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active">
+          {% for event in user.get_profile.stream %}
+          <div class="stream">
+            <p class="pull-left space-right">
+            {% gravatar event.actor.gravatar 32 %}
+            </p>
+            <p class="no-margin">
+            {{ event.actor|profile_url:event.actor.user.username }}
+            {{ event.verb }} {{ event.target }}
+            <small>{{ event.timesince }} ago</small>
+            </p>
+          </div>
+          {% empty %}
+          <p>Start following some user to get some news.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="span5">
+      {% include "user_projects.html" with profile=user.get_profile %}
   </div>
 </div>
 {% endblock %}

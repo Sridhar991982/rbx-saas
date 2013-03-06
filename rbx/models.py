@@ -102,9 +102,12 @@ class UserProfile(models.Model):
         #actor_stream(user.get_profile())
         return None
 
+    def runs(self):
+        return Run.objects.filter(user=self)
+
     def stats(self):
         stats = {}
-        total_runs = Run.objects.filter(user=self)
+        total_runs = self.runs()
         today = date.today()
         start_week = today - timedelta(today.weekday())
         end_week = start_week + timedelta(7)
@@ -343,6 +346,11 @@ class Run(models.Model):
         for idx, status in RUN_STATUS:
             if self.status == idx:
                 return status
+
+    def link(self):
+        return reverse('box', args=[self.user.user.username,
+                                    self.box.project.slug,
+                                    self.box.name])
 
     class Meta:
         get_latest_by = 'launched'

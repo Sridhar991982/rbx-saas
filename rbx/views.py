@@ -42,7 +42,9 @@ def home(request):
 
 @login_required
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    running = len(request.user.get_profile().runs().filter(status__in=[1, 4]))
+    return render(request, 'dashboard.html', {'stats': request.user.get_profile().stats(),
+                                              'running': running})
 
 
 def profile(request, username):

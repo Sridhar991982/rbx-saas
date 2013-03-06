@@ -10,7 +10,7 @@
 <div class="billboard">
   <div class="container">
     <div class="row-fluid">
-      <div class="span2">
+      <div class="span2 space-top">
         <img src="{% gravatar_url profile.gravatar 170 %}" 
              alt="{{ profile }}'s picture" class="img-polaroid"
              width="170" height="170" />
@@ -156,37 +156,7 @@
         </div>
     </div>
     <div class="span5">
-      <ul class="nav nav-tabs">
-          <li class="active"><a href="#projects"><i class="icon-book"></i> 
-            Projects</a></li>
-          <li><a href="#starred"><i class="icon-star"></i> Starred</a></li>
-      </ul>
-      <div class="tab-content">
-        <div class="tab-pane active" id="projects">
-          <ul class="unstyled projects">
-            {% for project in profile.projects|restrict:user %}
-            <li>
-                <i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
-                <a href="{{ project.link }}">{{ project.name }}</a>
-            </li>
-            {% empty %}
-            <li>{{ profile }} has no public projects.</li>
-            {% endfor %}
-          </ul>
-        </div>
-        <div class="tab-pane" id="starred">
-          <ul class="unstyled projects">
-            {% for starred in profile.starred|restrict:user %}
-            <li>
-                <i class="gray icon-{% if starred.public %}un{% endif %}lock"></i>
-                <a href="{{ starred.link }}">{{ starred.name }}</a>
-            </li>
-            {% empty %}
-            <li>{{ profile }} has no starred project yet.</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
+      {% include "user_projects.html" with profile=profile %}
     </div>
   </div>
 </div>

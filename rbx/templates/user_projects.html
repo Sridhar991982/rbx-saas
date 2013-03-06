@@ -1,0 +1,31 @@
+      <ul class="nav nav-tabs">
+          <li class="active"><a href="#projects"><i class="icon-book"></i> 
+            Projects</a></li>
+          <li><a href="#starred"><i class="icon-star"></i> Starred</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="projects">
+          <ul class="unstyled projects">
+            {% for project in profile.projects|restrict:user %}
+            <li>
+                <i class="gray icon-{% if project.public %}un{% endif %}lock"></i>
+                <a href="{{ project.link }}">{{ project.name }}</a>
+            </li>
+            {% empty %}
+            <li>{{ profile }} has no public projects.</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="tab-pane" id="starred">
+          <ul class="unstyled projects">
+            {% for starred in profile.starred|restrict:user %}
+            <li>
+                <i class="gray icon-{% if starred.public %}un{% endif %}lock"></i>
+                <a href="{{ starred.link }}">{{ starred.name }}</a>
+            </li>
+            {% empty %}
+            <li>{{ profile }} has no starred project yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
