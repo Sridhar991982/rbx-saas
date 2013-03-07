@@ -1,4 +1,4 @@
 <div class="alert alert-error fade in">
   <button type="button" class="close" data-dismiss="alert">&times;</button>
-  Oops, an error occured. Please try again!
+  {{ msg|default:"Oops, something wrong happened, please try again..." }}
 </div>

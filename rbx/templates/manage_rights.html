@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load rbx %}
+
+{% block title %}{% title "Manage rights" %}{% endblock %}
+
+{% block content %}
+<div class="billboard tinyboard">
+  <div class="container">
+    <div class="row-fluid">
+      <div class="span6 offset3">
+        <a href="{{ project.link }}" class="space-top btn pull-right">Project <i class="icon-caret-right"></i></a>
+        <h1 class="collapse-bottom">Manage rights</h1>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container space-top">
+  <div class="row-fluid">
+    <div class="span6 offset3">
+      <div id="fragment">
+        {% if status == "error" %}
+        {% include "alert-error.html" %}
+        {% elif status == "notexist" %}
+        {% include "alert-error.html" with msg="User does not exists" %}
+        {% elif status == "saved" %}
+        {% include "alert-saved.html" %}
+        {% endif %}
+        <form action="{{ project.rights_link }}" method="POST">
+          {% csrf_token %}
+          <table class="table table-striped">
+            <tr>
+              <th>User</th>
+              <th>Permission</th>
+            </tr>
+            <tr>
+              <td>{{ project.owner|profile_url:project.owner.user.username }}</td>
+              <td>Owner</td>
+            </tr>
+            {% for right in project.projectright_set.all %}
+            <tr>
+              <td>{{ right.user|profile_url:right.user.user.username }}</td>
+              <td>{{ right.permission }}
+                  <a href="{{ right.delete_right }}" class="close async-call">&times;</a>
+              </td>
+            </tr>
+            {% endfor %}
+            <tr>
+              <td><input type="text" name="username"></td>
+              <td>
+                <select name="right">
+                  {% if not project.public %}
+                  <option value="0">Can view</option>
+                  {% endif %}
+                  <option value="1" selected="selected">Can edit</option>
+                  <option value="2">Can admin</option>
+                </select>
+              </td>
+            </tr>
+          </table>
+          <button type="submit" class="btn btn-primary unfragmented">Grant user right</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

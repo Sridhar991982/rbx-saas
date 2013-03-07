@@ -7,8 +7,9 @@ var RBX = (function () {
 
         _modalFragment()
         _submitModalChanges()
+        _modalAsyncCall()
 
-        _selectToDropdown()
+        _improveRepositoryTypeSelection()
         _newBoxForm()
 
         _navTabs()
@@ -53,15 +54,8 @@ var RBX = (function () {
                 form = modal.find('form')
             modal.find('.modal-body').load(form.attr('action') + ' #fragment',
                 form.serializeArray(), function () {
-                modal.find('button.btn[data-dismiss="modal"]').text('Close')
-                modal.on('hidden', function () {
-                    modal.off('hidden')
-                    if (modal.find('input[name=reload-location]').val()) {
-                        location.href = modal.find('input[name=reload-location]').val()
-                    } else {
-                        location.reload()
-                    }
-                })
+                _improveRepositoryTypeSelection()
+                _modalSubmitEvents(modal)
             })
             return false;
         }
@@ -69,10 +63,22 @@ var RBX = (function () {
         $(document).on('submit', '.modal', action)
     }
 
+    var _modalSubmitEvents = function (modal) {
+        modal.find('button.btn[data-dismiss="modal"]').text('Close')
+        modal.on('hidden', function () {
+            modal.off('hidden')
+            if (modal.find('input[name=reload-location]').val()) {
+                location.href = modal.find('input[name=reload-location]').val()
+            } else {
+                location.reload()
+            }
+        })
+    }
+
     var _selectToDropdown = function () {
         $('select').each(function(i, e){
             if (!($(e).data('convert') == 'no')) {
-                $(e).hide().wrap('<div class="btn-group" id="select-group-' + i + '" />')
+                $(e).hide().wrap('<span class="btn-group" id="select-group-' + i + '" />')
 
                 var select = $('#select-group-' + i),
                     current = ($(e).val()) ? $(e).find(':selected').text() : '&nbsp;'
@@ -80,14 +86,16 @@ var RBX = (function () {
                 select.html('<input type="hidden" value="' + $(e).val() +
                                 '" name="' + $(e).attr('name') + '" id="' + $(e).attr('id') +
                                 '" class="' + $(e).attr('class') + '" />' +
-                            '<a class="btn dropdown-toggle" data-toggle="dropdown" href="#""><span>' +
-                              current +'</span> <span class="caret"></span></a>' +
-                            '<ul class="dropdown-menu"></ul>')
+                                '<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span>' +
+                                current +'</span> <span class="caret"></span></a>' +
+                                '<ul class="dropdown-menu"></ul>')
 
                 $(e).find('option').each(function(o,q) {
-                    select.find('.dropdown-menu').append('<li><a href="#" data-value="' + $(q).attr('value') + '">' + $(q).text() + '</a></li>')
-                    if ($(q).attr('selected'))
+                    select.find('.dropdown-menu').append('<li><a href="#" data-value="' + $(q).attr('value')
+                                                            + '">' + $(q).text() + '</a></li>')
+                    if ($(q).attr('selected')) {
                         select.find('.dropdown-menu li:eq(' + o + ')').click();
+                    }
                 });
 
                 select.find('.dropdown-menu a').click(function() {
@@ -157,9 +165,7 @@ var RBX = (function () {
 
         $(document).on('click', '#param_type a', function () {
             $('#new_param').load(location.pathname + '/param/'
-                                 + $(this).attr('data-type') + ' #fragment', function() {
-                _selectToDropdown()
-            })
+                                 + $(this).attr('data-type') + ' #fragment', _improveRepositoryTypeSelection)
             add_button.popover('hide')
             add_button.parent().hide()
             return false
@@ -169,7 +175,7 @@ var RBX = (function () {
     var _submitParamEdit = function () {
         $(document).on('click', '#configure .save_param', function () {
             var form = $(this).parent().parent().parent()
-            form.parent().load(form.attr('action') + ' #fragment', form.serializeArray(), _selectToDropdown)
+            form.parent().load(form.attr('action') + ' #fragment', form.serializeArray(), _improveRepositoryTypeSelection)
             return false
         })
     }
@@ -178,9 +184,7 @@ var RBX = (function () {
         $('.edit-param').on('click', function () {
             $(this).closest('.parameter').load(location.pathname + '/param/'
                                                + $(this).closest('.parameter').attr('data-param')
-                                               + ' #fragment', function() {
-                _selectToDropdown()
-            })
+                                               + ' #fragment', _selectToDropdown)
         })
     }
 
@@ -207,6 +211,14 @@ var RBX = (function () {
             else {
                 location.reload()
             }
+            return false
+        })
+    }
+
+    var _modalAsyncCall = function () {
+        $(document).on('click', '.modal.in .async-call', function () {
+            $('.modal-body').load($(this).attr('href') + ' #fragment', _improveRepositoryTypeSelection)
+            _modalSubmitEvents($('.modal.in'))
             return false
         })
     }

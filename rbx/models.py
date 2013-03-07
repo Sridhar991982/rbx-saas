@@ -156,6 +156,9 @@ class Project(models.Model):
     def star_link(self):
         return reverse('star_project', args=[self.owner.user.username, self.slug])
 
+    def rights_link(self):
+        return reverse('project_rights', args=[self.owner.user.username, self.slug])
+
     def authors(self):
         authors = [self.owner]
         authors.extend([r.user for r in
@@ -200,6 +203,20 @@ class ProjectRight(models.Model):
 
     def __unicode__(self):
         return '%s\'s %s right' % (self.right, self.project.name)
+
+    def rights(self):
+        return PROJECT_RIGHT
+
+    def permission(self):
+        for idx, right in PROJECT_RIGHT:
+            if self.right == idx:
+                return 'Can %s' % right.lower()
+
+    def delete_right(self):
+        return reverse('project_rights_delete',
+                       args=[self.project.owner.user.username,
+                             self.project.slug,
+                             self.user.user.username])
 
 
 class OperatingSystem(models.Model):

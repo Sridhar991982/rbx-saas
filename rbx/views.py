@@ -3,7 +3,7 @@ from json import dumps
 from os.path import join, isdir
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404, Http404
+from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -15,7 +15,7 @@ from uuid import uuid4
 from settings import STORAGE, VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, COMMON_ERROR_MSG
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
     BoxForm, RunForm, ParamForm, ProfileForm, PasswordForm
-from rbx.models import Project, Box, Run, BoxParam, RunParam
+from rbx.models import Project, Box, Run, BoxParam, RunParam, UserProfile, ProjectRight
 
 
 def home_or_dashboard(request):
@@ -286,10 +286,40 @@ def delete_param(request, username, project, box, param_id):
 
 
 @login_required
-def project_right(request, username, project, right, user):
+def project_rights(request, username, project):
     project = Project.retrieve(username, project, request.user, ADMIN_RIGHT)
-    if right not in (VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT):
-        raise Http404
+    status = None
+    if request.method == 'POST':
+        right = int(request.POST['right'])
+        if right in (VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT):
+            status = 'saved'
+            try:
+                user = UserProfile.objects.get(user__username=request.POST['username'])
+                if user != project.owner:
+                    project_right = ProjectRight.objects.get(user=user, project=project)
+                    project_right.right = right
+                    project_right.save()
+            except UserProfile.DoesNotExist:
+                status = 'notexist'
+            except ProjectRight.DoesNotExist:
+                project_right = ProjectRight(project=project, user=user, right=right).save()
+            except:
+                status = 'error'
+        else:
+            status = 'error'
+    return render(request, 'manage_rights.html', {'project': project, 'status': status})
+
+
+@login_required
+def project_rights_delete(request, username, project, user):
+    try:
+        project = Project.retrieve(username, project, request.user, ADMIN_RIGHT)
+        user = UserProfile.objects.get(user__username=user)
+        project_right = ProjectRight.objects.get(user=user, project=project)
+        project_right.delete()
+    except:
+        pass
+    return HttpResponseRedirect(project.rights_link())
 
 
 def set_run_status(request, secret, status):

@@ -17,7 +17,8 @@ projects_urls = patterns('rbx.views',
     url(r'^$', 'project', name='project'),
     url(r'^/action/edit$', 'edit_project', name='edit_project'),
     url(r'^/action/star$', 'star_project', name='star_project'),
-    url(r'^/action/right/(?P<right>\d+)/(?P<user>\w+)$', 'project_right', name='project_right'),
+    url(r'^/action/rights$', 'project_rights', name='project_rights'),
+    url(r'^/action/rights/(?P<user>\w+)$', 'project_rights_delete', name='project_rights_delete'),
     url(r'^/(?P<box>[\w-]+)', include(box_urls)),
 )
 
