@@ -41,7 +41,7 @@ var RBX = (function () {
         $('.modal-fragment').on('click', function() {
             var target = $(this).attr('data-target')
             $(target).modal({keyboard: false})
-            $(target + ' .modal-body').load($(this).attr('href') + ' #fragment')
+            $(target + ' .modal-body').load($(this).attr('href') + ' #fragment', _improveRepositoryTypeSelection)
             setTimeout(_populateReloadLocation, 600)
             return false;
         })
@@ -49,7 +49,7 @@ var RBX = (function () {
 
     var _submitModalChanges = function () {
         var action = function () {
-            var modal = $(this).parent().parent(),
+            var modal = $('.modal.in'),
                 form = modal.find('form')
             modal.find('.modal-body').load(form.attr('action') + ' #fragment',
                 form.serializeArray(), function () {
@@ -65,7 +65,8 @@ var RBX = (function () {
             })
             return false;
         }
-        $('.submit-change').on('submit', action).on('click', action)
+        $(document).on('click', '.submit-change', action)
+        $(document).on('submit', '.modal', action)
     }
 
     var _selectToDropdown = function () {
@@ -117,13 +118,17 @@ var RBX = (function () {
         activeTab && activeTab.tab('show')
     }
 
+    var _improveRepositoryTypeSelection = function () {
+        $('#id_source_repository').parent().append($('#id_repository_type').clone())
+        $('#div_id_repository_type').remove()
+        _selectToDropdown()
+    }
+
     var _newBoxForm = function () {
         $('.new_box').on('click', function () {
             $(this).parent().find('.box-list').append($('#tpl_box_form').html())
             $(this).remove()
-            $('#id_source_repository').parent().append($('#id_repository_type').clone())
-            $('#div_id_repository_type').remove()
-            _selectToDropdown()
+            _improveRepositoryTypeSelection()
         })
     }
 
@@ -194,11 +199,14 @@ var RBX = (function () {
             }
 
             var id = $(this).closest('.parameter').attr('data-param')
-            console.log(id)
-            if (id !== undefined)
+            if (id !== undefined) {
                 $.get(location.pathname + '/param/delete/' + id, function () {
                     location.reload()
                 })
+            }
+            else {
+                location.reload()
+            }
             return false
         })
     }

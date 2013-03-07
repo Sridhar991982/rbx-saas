@@ -50,6 +50,10 @@
             {% for author in project.authors %}
               {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
             {% endfor %}
+            <a href="{{ project.edit_link }}"
+                title="Manage authors" class="space-left undecorated modal-fragment"
+                data-target="#edit-modal" rel="tooltip">
+            <i class="icon-plus-sign"></i> <span class="tiny hidden-desktop">Manage authors</span></a>
           </li>
           <li><i class="icon-time"></i> Created {{ project.created|timesince }} ago</li>
         </ul>

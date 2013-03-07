@@ -4,38 +4,69 @@
 {% block title %}{% title "Sign in" %}{% endblock %}
 
 {% block content %}
-  <div class="container space-top">
+<div class="billboard">
+  <div class="container">
     <div class="row-fluid">
-      <div class="offset4 span4">
+      <div class="span12">
+        <h1 class="center">Sign in to Run in the Box</h1>
+      </div>
+      <div class="span6 offset3 space-top">
         {% if form.errors %}
         <div class="alert alert-error">
           <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <p>Your username and password didn't match. Please try again.</p>
+          Your username and password didn't match. Please try again.
         </div>
         {% endif %}
 
-        <h1>Sign in</h1>
-        <form method="post" action="{% url "login" %}" class="well" autocomplete="off">
+        <form method="post" action="{% url "login" %}" class="form-horizontal" autocomplete="off">
           {% csrf_token %}
-          <p>
-            <label for="id_username">{{ form.username.label }}</label>
-            <input id="id_username" type="text"
-                   name="{{ form.username.name }}" maxlength="30" class="input-block-level"
+            <div class="control-group">
+              <label class="control-label" for="id_username">{{ form.username.label }}</label>
+              <div class="controls">
+                <input id="id_username" type="text"
+                   name="{{ form.username.name }}" maxlength="30" 
                    autocapitalize="off" autofocus="autofocus"
                    tabindex="1" />
-          </p>
-          <p>
-            <label for="id_password">{{ form.password.label }} (<a
-            href="#">Forgot password</a>)</label>
-            <input type="password" name="{{ form.password.name }}"
-                   id="id_password" class="input-block-level"
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="id_password">{{ form.password.label }}</label>
+              <div class="controls">
+                <input type="password" name="{{ form.password.name }}"
+                   id="id_password"
                    autocapitalize="off"
                    tabindex="2" />
-          </p>
-          <input class="btn" type="submit" value="Sign in" />
-          <input type="hidden" name="next" value="{{ next }}" />
+              </div>
+            </div>
+            <div class="control-group">
+              <div class="controls">
+                <button type="submit" class="btn btn-primary">Sign in</button>
+              </div>
+            </div>
+            <input type="hidden" name="next" value="{{ next }}" />
         </form>
       </div>
     </div>
   </div>
+</div>
+<div class="container space-top center">
+  <div class="row-fluid">
+    <div class="span6">
+      <p class="icon big"><i class="icon-question-sign icon-large"></i></p>
+      <h2>Forgot your password?</h2>
+      <p>
+        Fill the <a href="#">Password Recovery Form</a> and we will send you
+        the instruction to reset your password.
+      </p>
+    </div>
+    <div class="span6">
+      <p class="icon big"><i class="icon-edit icon-large"></i></p>
+      <h2>Don't have an account?</h2>
+      <p>
+        Signing up for Run in the Box is easy. It is totally free and you'll be
+        up and running in a minute.
+      </p>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -3,7 +3,6 @@ from django.views.generic import TemplateView
 
 settings_urls = patterns('rbx.views',
     url(r'^profile$', 'profile_settings', name='settings_profile'),
-    url(r'^create-team$', 'home', name='settings_create_team'),
 )
 
 box_urls = patterns('rbx.views',

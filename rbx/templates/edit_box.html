@@ -5,15 +5,29 @@
 {% block title %}Edit {{ box }}{% endblock %}
 
 {% block content %}
+<div class="billboard tinyboard">
+  <div class="container">
+    <div class="row-fluid">
+      <div class="span6 offset3">
+        <a href="{{ box.link }}" class="space-top btn pull-right">Box <i class="icon-caret-right"></i></a>
+        <h1 class="collapse-bottom">Edit {{ box }}</h1>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="container space-top">
-  <div id="fragment">
-    {% if status == "error" %}
-      {% include "alert-error.html" %}
-    {% elif not form.errors and status == "saved" %}
-      {% include "alert-saved.html" %}
-    {% endif %}
+  <div class="row-fluid">
+    <div class="span6 offset3">
+      <div id="fragment">
+        {% if status == "error" %}
+        {% include "alert-error.html" %}
+        {% elif not form.errors and status == "saved" %}
+        {% include "alert-saved.html" %}
+        {% endif %}
 
-    {% crispy edit_form %}
+        {% crispy edit_form %}
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
