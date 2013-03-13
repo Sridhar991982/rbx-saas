@@ -202,15 +202,15 @@ class ProjectRight(models.Model):
                                              max_length=20)
 
     def __unicode__(self):
-        return '%s\'s %s right' % (self.right, self.project.name)
+        return '%s %s\'s %s right' % (self.user, self.project.name, self.permission(''))
 
     def rights(self):
         return PROJECT_RIGHT
 
-    def permission(self):
+    def permission(self, prefix='Can '):
         for idx, right in PROJECT_RIGHT:
             if self.right == idx:
-                return 'Can %s' % right.lower()
+                return '%s%s' % (prefix, right.lower())
 
     def delete_right(self):
         return reverse('project_rights_delete',

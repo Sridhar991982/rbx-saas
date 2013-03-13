@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load rbx %}
+
+{% block title %}{% title "Explore" %}{% endblock %}
+
+{% block content %}
+<div class="billboard">
+  <div class="container">
+    <div class="row-fluid">
+      <div class="span4">
+        <h2><i class="icon-cogs"></i> Active projects</h2>
+        <ul class="unstyled">
+          {% include "explore_project.html" with projects=projects.active %}
+        </ul>
+      </div>
+      <div class="span4">
+        <h2><i class="icon-star"></i> Popular projects</h2>
+        <ul class="unstyled">
+          {% include "explore_project.html" with projects=projects.populare %}
+        </ul>
+      </div>
+      <div class="span4">
+        <h2><i class="icon-book"></i> Newest projects</h2>
+        <ul class="unstyled">
+          {% include "explore_project.html" with projects=projects.newest %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container space-top">
+  <div class="row-fluid">
+      <div class="span4">
+        <ul class="nav nav-tabs">
+          <li><a href="#" class="active"><i class="icon-cog"></i> Active users</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active">
+            {% include "explore_user.html" with users=users.active %}
+          </div>
+        </div>
+      </div>
+      <div class="span4">
+        <ul class="nav nav-tabs">
+          <li><a href="#" class="active"><i class="icon-heart"></i> Popular users</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active">
+            {% include "explore_user.html" with users=users.popular %}
+          </div>
+        </div>
+      </div>
+      <div class="span4">
+        <ul class="nav nav-tabs">
+          <li><a href="#" class="active"><i class="icon-edit"></i> Newest users</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active">
+            {% include "explore_user.html" with users=users.newest %}
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+{% endblock %}

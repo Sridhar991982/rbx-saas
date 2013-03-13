@@ -322,6 +322,20 @@ def project_rights_delete(request, username, project, user):
     return HttpResponseRedirect(project.rights_link())
 
 
+def explore(request):
+    projects = {
+        'active': None,
+        'popular': None,
+        'newest': Project.objects.all().order_by('-created')[:5],
+    }
+    users = {
+        'active': None,
+        'popular': None,
+        'newest': UserProfile.objects.filter(user__is_active=True).order_by('-user__date_joined')[:5],
+    }
+    return render(request, 'explore.html', {'projects': projects, 'users': users})
+
+
 def set_run_status(request, secret, status):
     run = get_object_or_404(Run, secret_key=secret)
     run.set_status(status)

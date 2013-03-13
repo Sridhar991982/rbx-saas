@@ -1,0 +1,6 @@
+{% for project in projects %}
+<li><a href="{{ project.link }}">{{ project }}</a></li>
+{% empty %}
+<li>No project yet.</li>
+{% endfor %}
+

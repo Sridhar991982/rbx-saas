@@ -1,0 +1,15 @@
+{% load gravatar %}
+
+{% for profile in users %}
+<div class="stream">
+  <p class="pull-left space-right">
+    {% gravatar profile.gravatar 25 %}
+  </p>
+  <p class="no-margin">
+    {{ profile|profile_url:profile.user.username }}
+  </p>
+</div>
+{% empty %}
+<p>No user yet</p>
+{% endfor %}
+
