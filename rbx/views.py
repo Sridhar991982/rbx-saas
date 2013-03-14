@@ -205,11 +205,21 @@ def box(request, username, project, box):
                              run=run,
                              box_param=box_param.get(name=param)).save()
                 run.start()
-                messages.success(request, 'Run successfully launched!')
+                messages.success(request, 'Run #%s launched successfully' % run.pk)
             except Exception:
                 messages.error(request, COMMON_ERROR_MSG)
     else:
         launch = RunForm(box=box, user=request.user)
+        if 'cancel' in request.GET and request.user.is_authenticated():
+            run_id = int(request.GET['cancel'])
+            try:
+                run = Run.objects.get(pk=run_id)
+                if run.user == request.user.get_profile():
+                    if run.status in (1, 4):
+                        run.set_status('cancelled')
+                    messages.success(request, 'Run #%s cancelled successfully' % run_id)
+            except:
+                pass
     return render(request, 'box.html', {
         'box': box,
         'launch': launch,

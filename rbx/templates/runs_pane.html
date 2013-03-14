@@ -1,0 +1,38 @@
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#latest-runs" data-toggle="tab">
+        <i class="icon-cogs"></i> Latest runs</a>
+    </li>
+    <li><a href="#my-runs" data-toggle="tab">
+        <i class="icon-cog"></i> My latest runs</a>
+    </li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane active" id="latest-runs">
+        <ul class="unstyled runs">
+        {% for run in runs|slice:":10" %}
+        <li>
+          {% include "run_link.html" with run=run display_box=display_box display_user=True %}
+        </li>
+        {% empty %}
+        <li>No run for the moment.</li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div class="tab-pane" id="my-runs">
+      <ul class="unstyled runs">
+        {% for run in runs|own_run:user|slice:":10" %}
+        <li>
+          {% include "run_link.html" with run=run display_box=display_box %}
+        </li>
+        {% empty %}
+            {% if user.is_authenticated %}
+            <li>You have never run this project.</li>
+            {% else %}
+            <li><a href="{% url "login" %}">Sign in</a> to run this project!</a></li>
+            {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+</div>
+
+

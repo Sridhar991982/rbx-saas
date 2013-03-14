@@ -18,9 +18,9 @@ PROJECT_RIGHT = (
 )
 
 EXECUTOR_SOURCE_TYPE = (
-    ('git', 'Git'),
-    ('hg', 'Mercurial'),
-    ('git svn', 'Subversion'),
+    ('git clone', 'Git'),
+    ('hg clone', 'Mercurial'),
+    ('svn checkout', 'Subversion'),
 )
 
 RUN_STATUS = (
@@ -101,7 +101,7 @@ class UserProfile(models.Model):
         return actor_stream(self.user)
 
     def runs(self):
-        return Run.objects.filter(user=self)
+        return Run.objects.filter(user=self).order_by('-launched')
 
     def stats(self):
         stats = {}
@@ -173,13 +173,8 @@ class Project(models.Model):
     def boxes(self):
         return Box.objects.filter(project=self)
 
-    def runs(self, user=None):
-        if user is not None and not user.is_authenticated():
-            return None
-        project_runs = Run.objects.filter(box__in=self.box_set.iterator()).order_by('-launched')
-        if user:
-            return project_runs.filter(user=user.get_profile())[:10]
-        return project_runs[:10]
+    def runs(self):
+        return Run.objects.filter(box__in=self.box_set.iterator()).order_by('-launched')
 
     @staticmethod
     def retrieve(username, project_slug, user, right=VIEW_RIGHT):
@@ -261,6 +256,9 @@ class Box(models.Model):
         project = Project.retrieve(username, project_slug, user, right)
         return get_object_or_404(Box, project=project, name=box_name)
 
+    def runs(self, user=None):
+        return Run.objects.filter(box=self).order_by('-launched')
+
     class Meta:
         unique_together = ('project', 'name')
         verbose_name_plural = 'boxes'
@@ -283,11 +281,11 @@ class Run(models.Model):
     box = models.ForeignKey(Box)
     user = models.ForeignKey(UserProfile)
     launched = models.DateTimeField(auto_now_add=True)
-    started = models.DateTimeField(null=True)
-    duration = models.FloatField(null=True)
+    started = models.DateTimeField(blank=True)
+    duration = models.FloatField(blank=True)
     status = models.PositiveSmallIntegerField(choices=RUN_STATUS, default=1)
     secret_key = models.CharField(max_length=36)
-    vm_id = models.PositiveSmallIntegerField(null=True)
+    vm_id = models.PositiveSmallIntegerField(blank=True)
 
     def __unicode__(self):
         return '%s\'s run #%d' % (self.box.project.name, self.id)
@@ -302,17 +300,20 @@ class Run(models.Model):
         for idx, status in RUN_STATUS:
             if status.lower() == name.lower():
                 return idx
-        raise Exception('Status name not found')
+        return 0
 
     def set_status(self, name):
         idx = self.get_status_id(name)
         if self.status == idx:
             return
         self.status = idx
-        if idx == 4:
+        if idx in (2, 3):
+            self.stop(idx)
+        elif idx == 4:
             self.started = datetime.now()
         elif idx > 4:
             self.duration = (datetime.now() - self.started).total_seconds()
+            self.stop(idx)
         self.save()
 
     def start(self):
@@ -321,7 +322,7 @@ class Run(models.Model):
             CLOUD_AUTH,
             VM_TEMPLATE % {'image': self.box.os.identifier,
                            'ssh_key': PUBLIC_KEY,
-                           'params': self.box_context_params() + self.run_context_params()})
+                           'params': self.context()})
         self.vm_id = vm_id
         if not success:
             self.status = 0
@@ -329,22 +330,11 @@ class Run(models.Model):
         if not success:
             raise Exception()
 
-    def box_context_params(self):
-        params = 'rbx_clone="%s clone %s %s",\n' % (self.box.repository_type,
-                                                    self.box.source_repository,
-                                                    self.box.name)
-        params += 'rbx_box_name="%s",\n' % self.box.name
-        params += 'rbx_before_run="%s",\n' % self.box.before_run
-        params += 'rbx_run_cmd="%s",\n' % self.box.run_command
-        params += 'rbx_after_run="%s",\n' % self.box.after_run
-        return params
-
-    def run_context_params(self):
+    def context(self):
         return ''
 
     def stop(self, reason):
         self.rpc.one.vm.action(CLOUD_AUTH, 'finalize', self.vm_id)
-        self.status = reason
 
     def state(self):
         info = self._info(self.vm_id)

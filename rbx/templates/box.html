@@ -1,6 +1,4 @@
 {% extends "base.html" %}
-{% load gravatar %}
-{% load url from future %}
 {% load crispy_forms_tags %}
 {% load rbx %}
 
@@ -79,52 +77,7 @@
         </div>
       </div>
       <div class="span5">
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#all-runs" data-toggle="tab">
-          <i class="icon-cogs"></i> All runs</a></li>
-          <li><a href="#my-runs" data-toggle="tab">
-          <i class="icon-cog"></i> My runs</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane active" id="all-runs">
-              <ul class="unstyled runs">
-                {% for run in box.run_set.iterator %}
-                <li>
-                <a href="#" class="idx pull-right">#{{ run.pk }}</a>
-                {% gravatar run.user.gravatar 20 %} 
-                {{ run.user|profile_url:run.user.user.username }}, 
-                {{ run.launched|timesince }} ago<br />
-                <small class="space-left">
-                    {{ run.status_text }}{% if run.status > 4 %},
-                    in {{ run.duration|elapsed }}{% endif %}
-                </small>
-                </li>
-                {% empty %}
-                <li>No run for the moment.</li>
-                {% endfor %}
-              </ul>
-            </div>
-            <div class="tab-pane" id="my-runs">
-              <ul class="unstyled runs">
-                {% for run in box.run_set.iterator|own_run:user %}
-                <li>
-                <a href="#" class="idx pull-right">#{{ run.pk }}</a>
-                <i class="icon-time"></i> {{ run.launched|timesince }} ago<br />
-                <small class="space-left">
-                    {{ run.status_text }}{% if run.status > 4 %},
-                    in {{ run.duration|elapsed }}{% endif %}
-                </small>
-                </li>
-                {% empty %}
-                    {% if user.is_authenticated %}
-                    <li>You have never run this project.</li>
-                    {% else %}
-                    <li><a href="{% url "login" %}">Sign in</a> to run this project!</a></li>
-                    {% endif %}
-                {% endfor %}
-              </ul>
-            </div>
-        </div>
+        {% include "runs_pane.html" with runs=box.runs %}
       </div>
     </div>
 </div>

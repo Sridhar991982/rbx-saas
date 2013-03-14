@@ -1,0 +1,23 @@
+{% load gravatar %}
+
+<a href="{{ run.box.link }}?run={{ run.pk }}" class="idx pull-right">#{{ run.pk }}</a>
+{% if display_user %}
+    {% gravatar run.user.gravatar 20 %} 
+    {{ run.user|profile_url:run.user.user.username }},
+{% else %}
+    <i class="icon-time"></i>
+{% endif %}
+{{ run.launched|timesince }} ago<br />
+<small class="space-left">
+    {% if display_box %}
+    Using <a href="{{ run.box.link }}">{{ run.box.name }} box</a>.
+    {% endif %}
+    {{ run.status_text }}{% if run.status > 4 %},
+    in {{ run.duration|elapsed }}{% endif %}
+</small>
+{% if run.status == 1 or run.status == 4 %}
+    <a href="{{ run.box.link }}?cancel={{ run.pk }}" class="undecorated"
+        title="Cancel run" rel="tooltip">
+    <i class="icon-remove-sign"></i>
+    </a>
+{% endif %}

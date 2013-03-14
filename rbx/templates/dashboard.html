@@ -11,7 +11,11 @@
         <ul class="unstyled">
         {% for run in user.get_profile.runs|slice:":5" %}
         <li>
-            <a href="{{ run.link }}">{{ run.box }} #{{ run.pk }}</a>,
+            <a href="{{ run.box.link }}?run={{ run.pk }}" class="pull-left space-right idx">
+                #{{ run.pk }}
+            </a>
+            <a href="{{ run.box.project.link }}">{{ run.box.project.name }}</a>
+            using <a href="{{ run.box.link }}">{{ run.box.name }} box</a>,
             <small>{{ run.launched|timesince }} ago</small><br />
             <small class="space-left">
             {{ run.status_text }}{% if run.status > 3 %},
@@ -56,7 +60,7 @@
           {% for event in user.get_profile.stream %}
           <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar event.actor.gravatar 32 %}
+            {% gravatar event.actor.get_profile.gravatar 32 %}
             </p>
             <p class="no-margin">
             {{ event.actor.get_profile|profile_url:event.actor.username }}
