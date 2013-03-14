@@ -157,7 +157,6 @@
           {% endfor %}
         </div>
         <div class="tab-pane" id="activity">
-        <p>No project activity available right now.</p>
           {% for event in project.activity %}
           <div class="stream">
             <p class="pull-left space-right">
@@ -169,6 +168,8 @@
             <small>{{ event|timesince }} ago</small>
             </p>
           </div>
+          {% empty %}
+            <p>No project activity yet.</p>
           {% endfor %}
         </div>
       </div>

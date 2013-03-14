@@ -57,16 +57,14 @@
       </ul>
       <div class="tab-content">
         <div class="tab-pane active">
-          {% for event in user.get_profile.stream %}
-          <div class="stream">
-            <p class="pull-left space-right">
-            {% gravatar event.actor.get_profile.gravatar 32 %}
-            </p>
-            <p class="no-margin">
+          {% for event in user.get_profile.stream|slice:":20" %}
+          <div class="stream media">
+            {% gravatar event.actor.get_profile.gravatar 32 'class="pull-left space-right"' %}
+            <div class="media-body">
             {{ event.actor.get_profile|profile_url:event.actor.username }}
-            {{ event.verb }} <a href="{{ event.target.link }}">{{ event.target }}</a>
+            {{ event.verb }} <a href="{{ event.target.link }}">{{ event.target }}</a><br />
             <small>{{ event.timesince }} ago</small>
-            </p>
+            </div>
           </div>
           {% empty %}
           <p>Start following some user to get some news.</p>

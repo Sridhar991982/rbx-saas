@@ -113,7 +113,9 @@ var RBX = (function () {
             var href = $(this).attr('href')
             if (href.substr(0, 1) === '#' && $(href).hasClass('tab-pane')) {
                 $('[href='+href+']').tab('show')
-                location.hash = '/' + href.substr(1)
+                if (!$(href).parent().hasClass('no-hash')) {
+                    location.hash = '/' + href.substr(1)
+                }
                 return false
             }
         })

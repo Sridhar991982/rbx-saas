@@ -86,7 +86,7 @@ class UserProfile(models.Model):
         return user_projects
 
     def followers(self):
-        return followers(self)
+        return followers(self.user, User)
 
     def starred(self):
         return following(self.user, Project)
@@ -342,6 +342,9 @@ class Run(models.Model):
 
     def ip(self):
         return self._info(self.vm_id).find('TEMPLATE/NIC').find('IP').text
+
+    def is_finished(self):
+        return self.status not in (1, 4)
 
     def _info(self, xml=True):
         success, info, _ = self.rpc.one.vm.info(CLOUD_AUTH, self.vm_id)

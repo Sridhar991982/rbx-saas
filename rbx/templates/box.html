@@ -60,19 +60,39 @@
     <div class="row-fluid">
       <div class="span7">
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#configure"><i class="icon-beaker"></i> Configure</a></li>
-            <li><a href="#details"><i class="icon-file"></i> Run details</a></li>
+            <li class="{% if not details %}active{% endif %}"><a href="#configure"><i class="icon-beaker"></i> Configure</a></li>
+            <li class="{% if details %}active{% endif %}"><a href="#details"><i class="icon-file"></i> Run details</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane active" id="configure">
+            <div class="tab-pane {% if not details %}active{% endif %}" id="configure">
                 {% crispy launch %}
             </div>
-            <div class="tab-pane" id="details">
+            <div class="tab-pane {% if details %}active{% endif %}" id="details">
+                {% if not details %}
                 <div class="alert">
                   Select a run in the above pane to view it details and results.
                   <i class="icon-circle-arrow-right hidden-phone pull-right icon-large"></i>
                   <i class="icon-circle-arrow-down visible-phone pull-right icon-large"></i>
                 </div>
+                {% else %}
+                <div class="tabbable tabs-left no-hash">
+                  <ul class="nav nav-tabs">
+                    <li class="active"><a href="#details-params">Run parameters</a></li>
+                  </ul>
+                  <div class="tab-content active" id="details-params">
+                    <dl class="dl-horizontal">
+                      {% for param in details.params %}
+                      <dt>{{ param.box_param.name }}</dt>
+                      <dd>{{ param.value }}</dd>
+                      <dd class="small">{{ param.box_param.constraints|from_json:"help_text" }}</dd>
+                      {% empty %}
+                      <dt>No parameters</dt>
+                      <dd>This box doesn't takes any parameters</dt>
+                      {% endfor %}
+                    </dl>
+                  </div>
+                </div>
+                {% endif %}
             </div>
         </div>
       </div>

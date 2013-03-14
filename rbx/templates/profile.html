@@ -23,11 +23,11 @@
           <i class="icon-wrench icon-small"></i> <span class="tiny hidden-desktop">Account settings</span></a>
           {% elif user.is_authenticated %}
           <a href="{% url "follow" profile.user.username %}" rel="tooltip" 
-              title="{% if user|is_following:profile %}Unf{% else %}F{% endif %}ollow {{ profile }}"
+              title="{% if user|is_following:profile.user %}Unf{% else %}F{% endif %}ollow {{ profile }}"
               class="small space-left undecorated">
-          <i class="icon-heart{% if user|is_following:profile %}-empty{% endif %}
+          <i class="icon-heart{% if user|is_following:profile.user %}-empty{% endif %}
               icon-small"></i> <span class="tiny hidden-desktop">
-              {% if user|is_following:profile %}Unf{% else %}F{% endif %}ollow {{ profile }}</span></a>
+              {% if user|is_following:profile.user %}Unf{% else %}F{% endif %}ollow {{ profile }}</span></a>
           {% endif %}
         </h1>
         <div class="row-fluid">
@@ -101,38 +101,38 @@
       </ul>
       <div class="tab-content">
         <div class="tab-pane active" id="activity">
-            <p>No public activity not available right now.</p>
-            <!--
-            {# for action in stream %}
-                {% if action.target_content_type.name == "project" %}
-                <div class="row-fluid stream">
-                <div class="span1 visible-desktop">
-                    <i class="pull-left icon-plus-sign"></i>
-                </div>
-                <div class="span11">
-                    <a href="{% url "profile" action.actor.user %}">{{ action.actor }}</a>
+            {% for action in profile.activity|slice:":15" %}
+                {% if action.target_content_type.name == "project" and action.target|is_visible:user %}
+                <div class="media stream">
+                    <i class="pull-left iconify
+                    {% if action.verb == 'created' %}
+                        icon-book
+                    {% elif action.verb == 'updated' %}
+                        icon-wrench
+                    {% elif action.verb == 'started following' %}
+                        icon-heart
+                    {% endif %}
+                    "></i>
+                <div class="media-body">
+                    <a href="{{ action.actor.user.link }}">{{ action.actor.get_profile }}</a>
                     {{ action.verb }}
-                    {{ action.target_content_type.name }}
-                    <a href="{% url "project" action.actor.user action.target.slug %}">
-                    {{ action.target.name }}
-                    </a>
-                    <small>{{ action.timesince }} ago</small>
+                    <a href="{{ action.target.link }}">{{ action.target.name }}</a><br />
+                    <small>{{ action.timestamp|timesince }} ago</small>
                 </div>
                 </div>
                 {% endif %}
-            {# empty %}
+            {% empty %}
             <p class="stream">{{ profile }} has no public activity.</p>
-            {% endfor #}
-            -->
+            {% endfor %}
           </div>
           <div class="tab-pane" id="followers">
             {% for follower in profile.followers %}
             <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar follower.gravatar 25 %}
+            {% gravatar follower.get_profile.gravatar 25 %}
             </p>
             <p class="no-margin">
-            {{ follower|profile_url:follower.user.username }}
+            {{ follower.get_profile|profile_url:follower.username }}
             </p>
             </div>
             {% empty %}
@@ -143,10 +143,10 @@
             {% for followee in profile.following %}
             <div class="stream">
             <p class="pull-left space-right">
-            {% gravatar followee.gravatar 25 %}
+            {% gravatar followee.get_profile.gravatar 25 %}
             </p>
             <p class="no-margin">
-            {{ followee|profile_url:followee.user.username }}
+            {{ followee.get_profile|profile_url:followee.username }}
             </p>
             </div>
             {% empty %}

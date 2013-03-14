@@ -92,13 +92,13 @@ def profile_settings(request):
 
 @login_required
 def follow_user(request, username):
-    user = get_object_or_404(User, username=username).get_profile()
-    if user == request.user.get_profile():
+    user = get_object_or_404(User, username=username)
+    if user == request.user:
         return
-    if is_following(request.user.get_profile(), user):
-        unfollow(request.user.get_profile(), user)
+    if is_following(request.user, user):
+        unfollow(request.user, user)
     else:
-        follow(request.user.get_profile(), user, actor_only=False)
+        follow(request.user, user, actor_only=False)
     return HttpResponseRedirect(reverse('profile', args=[username]))
 
 
@@ -189,6 +189,7 @@ def star_project(request, username, project):
 
 
 def box(request, username, project, box):
+    details = None
     box = Box.retrieve(username, project, box, request.user)
     if request.method == 'POST' and request.user.is_authenticated():
         launch = RunForm(request.POST, box=box, user=request.user)
@@ -221,10 +222,16 @@ def box(request, username, project, box):
             except:
                 pass
         elif 'run' in request.GET:
-            pass
+            run_id = int(request.GET['run'])
+            try:
+                run = Run.objects.get(pk=run_id)
+                details = {'params': RunParam.objects.filter(run=run)}
+            except:
+                pass
     return render(request, 'box.html', {
         'box': box,
         'launch': launch,
+        'details': details,
     })
 
 

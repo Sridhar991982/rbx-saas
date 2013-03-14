@@ -1,3 +1,4 @@
+from json import loads
 from django import template
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
@@ -21,9 +22,11 @@ def is_visible(project, user):
 def is_editable(project, user):
     return project.is_allowed(user, EDIT_RIGHT)
 
+
 @register.filter
 def can_admin(project, user):
     return project.is_allowed(user, ADMIN_RIGHT)
+
 
 @register.filter
 def profile_url(user, username):
@@ -78,3 +81,9 @@ def restrict(projects, user):
 @register.filter
 def hide(obj, user):
     return [o for o in obj if not hasattr(o.object, 'is_allowed') or o.object.is_allowed(user)]
+
+
+@register.filter
+def from_json(struct, field):
+    json = loads(struct)
+    return json.get(field, '')
