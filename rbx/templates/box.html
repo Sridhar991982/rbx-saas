@@ -75,22 +75,30 @@
                   <i class="icon-circle-arrow-down visible-phone pull-right icon-large"></i>
                 </div>
                 {% else %}
-                <div class="tabbable tabs-left no-hash">
-                  <ul class="nav nav-tabs">
-                    <li class="active"><a href="#details-params">Run parameters</a></li>
-                  </ul>
-                  <div class="tab-content active" id="details-params">
-                    <dl class="dl-horizontal">
-                      {% for param in details.params %}
-                      <dt>{{ param.box_param.name }}</dt>
-                      <dd>{{ param.value }}</dd>
-                      <dd class="small">{{ param.box_param.constraints|from_json:"help_text" }}</dd>
-                      {% empty %}
-                      <dt>No parameters</dt>
-                      <dd>This box doesn't takes any parameters</dt>
-                      {% endfor %}
-                    </dl>
-                  </div>
+                <h4>Run informations</h4>
+
+                <h4>Run parameters</h4>
+                  <dl class="dl-horizontal">
+                    {% for param in details.params %}
+                    <dt>{{ param.box_param.name }}</dt>
+                    <dd>{{ param.value }}</dd>
+                    <dd class="small">{{ param.box_param.constraints|from_json:"help_text" }}</dd>
+                    {% empty %}
+                    <dt>No parameters</dd>
+                    <dd>This box doesn't takes any parameters</dd>
+                    {% endfor %}
+                  </dl>
+                <ul class="nav nav-pills show-pane">
+                    {% for file in details.outputs %}
+                    <li><a href="#details-{{ file|basename|slugify }}">{{ file|basename }}</a></li>
+                    {% endfor %}
+                </ul>
+                <div class="panes-content">
+                {% for file in details.outputs %}
+                <div id="details-{{ file|basename|slugify }}" class="hide">
+                    {{ file|insert|safe }}
+                </div>
+                {% endfor %}
                 </div>
                 {% endif %}
             </div>

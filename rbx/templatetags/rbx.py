@@ -1,3 +1,5 @@
+import os
+from mimetypes import guess_type
 from json import loads
 from django import template
 from django.core.urlresolvers import reverse
@@ -87,3 +89,27 @@ def hide(obj, user):
 def from_json(struct, field):
     json = loads(struct)
     return json.get(field, '')
+
+
+@register.filter
+def basename(filename):
+    return os.path.basename(filename)
+
+
+@register.filter
+def insert(filepath):
+    mimetypes, _ = guess_type(filepath)
+    if not mimetypes:
+        return "<p>Can't display file. See raw content</p>"
+    elif mimetypes == 'application/pdf':
+        return """
+<object type="application/pdf" data="%s">
+    <p>Oops, your browser can't display this PDF file</p>
+</object>
+""" % filepath
+    elif mimetypes.startswith('image'):
+        return '<img src="%s" alt="%s" />' % (filepath, os.path.basename(filepath))
+    elif mimetypes.find('plain') != -1 or mimetypes.find('xml') != -1 or mimetypes.find('text') != -1:
+        with open(filepath) as fd:
+            return "<pre>%s</pre>" % fd.read()
+

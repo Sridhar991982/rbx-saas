@@ -1,3 +1,6 @@
+import os
+import xmlrpclib
+import xml.etree.cElementTree as etree
 from datetime import datetime, timedelta, date
 from django.db import models
 from django.http import Http404
@@ -6,10 +9,8 @@ from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
-    CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY
+    CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY, STORAGE
 from actstream.models import followers, following, target_stream, user_stream, actor_stream
-import xmlrpclib
-import xml.etree.cElementTree as etree
 
 PROJECT_RIGHT = (
     (VIEW_RIGHT, 'View'),
@@ -109,7 +110,7 @@ class UserProfile(models.Model):
         today = date.today()
         start_week = today - timedelta(today.weekday())
         end_week = start_week + timedelta(7)
-        week_runs = total_runs.filter(started__range=[start_week, end_week])
+        week_runs = total_runs.filter(launched__range=[start_week, end_week])
         stats['total_runs'] = len(total_runs)
         stats['total_time'] = total_runs.filter(status__gt=4).aggregate(Avg('duration'))['duration__avg'] or 0
         stats['week_runs'] = len(week_runs)
@@ -359,6 +360,10 @@ class Run(models.Model):
         return reverse('box', args=[self.user.user.username,
                                     self.box.project.slug,
                                     self.box.name])
+
+    def outputs(self):
+        return [os.path.join(STORAGE, str(self.pk), f)
+                for f in os.listdir(os.path.join(STORAGE, str(self.pk)))]
 
     class Meta:
         get_latest_by = 'launched'

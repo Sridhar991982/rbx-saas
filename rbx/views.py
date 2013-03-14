@@ -225,8 +225,11 @@ def box(request, username, project, box):
             run_id = int(request.GET['run'])
             try:
                 run = Run.objects.get(pk=run_id)
-                details = {'params': RunParam.objects.filter(run=run)}
+                details = {'params': RunParam.objects.filter(run=run),
+                           'outputs': run.outputs(),
+                           'run': run}
             except:
+                raise
                 pass
     return render(request, 'box.html', {
         'box': box,

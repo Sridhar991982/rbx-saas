@@ -111,10 +111,15 @@ var RBX = (function () {
     var _navTabs = function () {
         $('a').on('click', function () {
             var href = $(this).attr('href')
-            if (href.substr(0, 1) === '#' && $(href).hasClass('tab-pane')) {
-                $('[href='+href+']').tab('show')
-                if (!$(href).parent().hasClass('no-hash')) {
-                    location.hash = '/' + href.substr(1)
+            if (href.substr(0, 1) === '#') {
+                if ($(href).hasClass('tab-pane')) {
+                    $('[href='+href+']').tab('show')
+                    if (!$(href).parent().hasClass('no-hash')) {
+                        location.hash = '/' + href.substr(1)
+                    }
+                } else if ($(href).parent().hasClass('panes-content')) {
+                    $(href).removeClass('hide').siblings().addClass('hide')
+                    $(this).parent().addClass('active').siblings().removeClass('active')
                 }
                 return false
             }
