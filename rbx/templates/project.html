@@ -49,10 +49,12 @@
             {% for author in project.authors %}
               {{ author|profile_url:author.user.username }}{% if not forloop.last %},{% endif %}
             {% endfor %}
+            {% if project|can_admin:user %}
             <a href="{{ project.rights_link }}"
                 title="Manage rights" class="space-left undecorated modal-fragment"
                 data-target="#rights-modal" rel="tooltip">
             <i class="icon-plus-sign"></i></a>
+            {% endif %}
           </li>
           <li><i class="icon-time"></i> Created {{ project.created|timesince }} ago</li>
         </ul>

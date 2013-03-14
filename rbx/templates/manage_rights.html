@@ -41,7 +41,9 @@
             <tr>
               <td>{{ right.user|profile_url:right.user.user.username }}</td>
               <td>{{ right.permission }}
+                  {% if right.user != user.get_profile %}
                   <a href="{{ right.delete_right }}" class="close async-call">&times;</a>
+                  {% endif %}
               </td>
             </tr>
             {% endfor %}

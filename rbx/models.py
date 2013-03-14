@@ -81,7 +81,7 @@ class UserProfile(models.Model):
 
     def projects(self):
         user_projects = list(Project.objects.filter(owner=self))
-        contribute = ProjectRight.objects.filter(user=self).filter(right=EDIT_RIGHT)
+        contribute = ProjectRight.objects.filter(user=self).filter(right__gte=EDIT_RIGHT)
         user_projects.extend([c.project for c in contribute])
         return user_projects
 

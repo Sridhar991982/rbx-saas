@@ -2,7 +2,7 @@ from django import template
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
-from settings import EDIT_RIGHT
+from settings import EDIT_RIGHT, ADMIN_RIGHT
 
 register = template.Library()
 
@@ -21,6 +21,9 @@ def is_visible(project, user):
 def is_editable(project, user):
     return project.is_allowed(user, EDIT_RIGHT)
 
+@register.filter
+def can_admin(project, user):
+    return project.is_allowed(user, ADMIN_RIGHT)
 
 @register.filter
 def profile_url(user, username):
@@ -60,6 +63,8 @@ def elapsed(seconds):
 
 @register.filter
 def own_run(runs, user):
+    if not user.is_authenticated():
+        return []
     return [r for r in runs if r.user == user.get_profile()]
 
 

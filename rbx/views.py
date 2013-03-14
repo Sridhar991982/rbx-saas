@@ -220,6 +220,8 @@ def box(request, username, project, box):
                     messages.success(request, 'Run #%s cancelled successfully' % run_id)
             except:
                 pass
+        elif 'run' in request.GET:
+            pass
     return render(request, 'box.html', {
         'box': box,
         'launch': launch,
@@ -335,12 +337,12 @@ def explore(request):
     projects = {
         'active': None,
         'popular': None,
-        'newest': Project.objects.all().order_by('-created')[:5],
+        'newest': None  # Project.objects.all().order_by('-created')[:5],
     }
     users = {
         'active': None,
         'popular': None,
-        'newest': UserProfile.objects.filter(user__is_active=True).order_by('-user__date_joined')[:5],
+        'newest': None  # UserProfile.objects.filter(user__is_active=True).order_by('-user__date_joined')[:5],
     }
     return render(request, 'explore.html', {'projects': projects, 'users': users})
 
