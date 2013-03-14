@@ -52,8 +52,7 @@ def setup():
 def syncdb():
     ''' Sync remove app database
     '''
-    with cd(PROJECT_NAME):
-        run('PYTHONPATH=./lib python manage.py syncdb')
+    django('syncdb')
 
 
 def clean():
@@ -80,8 +79,8 @@ def compile():
 
 
 def serve():
-    local('PYTHONPATH=./lib:$PYTHONPATH python manage.py runserver')
+    django('runserver')
 
 
 def django(arg):
-    local('PYTHONPATH=./lib:$PYTHONPATH python manage.py %s' % arg)
+    local('python manage.py %s' % arg)

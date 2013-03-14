@@ -95,7 +95,7 @@
                 {{ run.user|profile_url:run.user.user.username }}, 
                 {{ run.launched|timesince }} ago<br />
                 <small class="space-left">
-                    {{ run.status_text }}{% if run.status > 3 %},
+                    {{ run.status_text }}{% if run.status > 4 %},
                     in {{ run.duration|elapsed }}{% endif %}
                 </small>
                 </li>
@@ -111,7 +111,7 @@
                 <a href="#" class="idx pull-right">#{{ run.pk }}</a>
                 <i class="icon-time"></i> {{ run.launched|timesince }} ago<br />
                 <small class="space-left">
-                    {{ run.status_text }}{% if run.status > 3 %},
+                    {{ run.status_text }}{% if run.status > 4 %},
                     in {{ run.duration|elapsed }}{% endif %}
                 </small>
                 </li>

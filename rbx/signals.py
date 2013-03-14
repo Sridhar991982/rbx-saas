@@ -13,6 +13,6 @@ post_save.connect(on_user_profile_created, sender=User)
 
 def on_project_saved(sender, instance, created, **kwargs):
     verb = created and 'created' or 'updated'
-    action.send(instance.owner, verb=verb, target=instance)
+    action.send(instance.owner.user, verb=verb, target=instance)
 
 post_save.connect(on_project_saved, sender=Project)

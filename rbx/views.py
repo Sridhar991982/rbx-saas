@@ -181,10 +181,10 @@ def edit_project(request, username, project):
 @login_required
 def star_project(request, username, project):
     project = Project.retrieve(username, project, request.user)
-    if is_following(request.user.get_profile(), project):
-        unfollow(request.user.get_profile(), project)
+    if is_following(request.user, project):
+        unfollow(request.user, project)
     else:
-        follow(request.user.get_profile(), project, actor_only=False)
+        follow(request.user, project, actor_only=False)
     return HttpResponseRedirect(project.link())
 
 
@@ -207,7 +207,6 @@ def box(request, username, project, box):
                 run.start()
                 messages.success(request, 'Run successfully launched!')
             except Exception:
-                raise
                 messages.error(request, COMMON_ERROR_MSG)
     else:
         launch = RunForm(box=box, user=request.user)

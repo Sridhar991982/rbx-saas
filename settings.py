@@ -52,7 +52,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 ACTSTREAM_SETTINGS = {
-    'MODELS': ('rbx.UserProfile', 'rbx.Project', 'rbx.Executor'),
+    'MODELS': ('auth.user', 'rbx.project', 'rbx.Box', 'rbx.Run'),
     'FETCH_RELATIONS': True,
     'USE_PREFETCH': True,
 }

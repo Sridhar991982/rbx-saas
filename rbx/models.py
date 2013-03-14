@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
     CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY
-from actstream.models import followers, following, target_stream
+from actstream.models import followers, following, target_stream, user_stream, actor_stream
 import xmlrpclib
 import xml.etree.cElementTree as etree
 
@@ -89,18 +89,16 @@ class UserProfile(models.Model):
         return followers(self)
 
     def starred(self):
-        return following(self, Project)
+        return following(self.user, Project)
 
     def following(self):
-        return following(self, UserProfile)
+        return following(self.user, User)
 
     def stream(self):
-        #user_stream(request.user.get_profile())
-        return None
+        return user_stream(self.user)
 
     def activity(self):
-        #actor_stream(user.get_profile())
-        return None
+        return actor_stream(self.user)
 
     def runs(self):
         return Run.objects.filter(user=self)
@@ -170,7 +168,7 @@ class Project(models.Model):
         return followers(self)
 
     def activity(self):
-        return target_stream(self)
+        return target_stream(self, '')
 
     def boxes(self):
         return Box.objects.filter(project=self)
