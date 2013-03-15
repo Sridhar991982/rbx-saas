@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+
+{% load staticfiles %}
 {% load crispy_forms_tags %}
 {% load rbx %}
 
@@ -76,7 +78,17 @@
                 </div>
                 {% else %}
                 <h4>Run informations</h4>
-
+                  <dl class="dl-horizontal">
+                    <dt>User<dt>
+                    <dd><a href="{{ details.run.user.link }}">{{ details.run.user }}</a></dd>
+                    <dt>Launched<dt>
+                    <dd>{{ details.run.launched }}</dd>
+                    <dt>Status</dt>
+                    <dd>{{ details.run.status_text }}</dd>
+                    <dt>Run time<dt>
+                    <dd>{% if details.run.duration %}{{ details.run.duration|elapsed }}
+                        {% else %}N/A{% endif %}</dd>
+                  </dl>
                 <h4>Run parameters</h4>
                   <dl class="dl-horizontal">
                     {% for param in details.params %}
@@ -88,18 +100,38 @@
                     <dd>This box doesn't takes any parameters</dd>
                     {% endfor %}
                   </dl>
+                <h4>Run outputs</h4>
+                {% if not details.outputs|length %}
+                <div class="alert">No output available for this run.</div>
+                {% else %}
                 <ul class="nav nav-pills show-pane">
                     {% for file in details.outputs %}
                     <li><a href="#details-{{ file|basename|slugify }}">{{ file|basename }}</a></li>
                     {% endfor %}
                 </ul>
                 <div class="panes-content">
+                <div class="alert">
+                Select a file on the list above to see the content.
+                </div>
                 {% for file in details.outputs %}
                 <div id="details-{{ file|basename|slugify }}" class="hide">
-                    {{ file|insert|safe }}
+                    {% if file|is_image %}
+                    <a class="btn pull-right btn-mini" href="{% static file %}">raw content</a>
+                    <div class="well">
+                      <img src="{% static file %}" alt="{{ file|basename }}" />
+                    </div>
+                    {% elif file|is_text %}
+                    <a class="btn pull-right btn-mini" href="{% static file %}">raw content</a>
+                    <pre>{{ file|get_content }}</pre>
+                    {% else %}
+                    <div class="well center">
+                    View <a href="{% static file %}">raw content</a>
+                    </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
                 </div>
+                {% endif %}
                 {% endif %}
             </div>
         </div>

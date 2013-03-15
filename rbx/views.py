@@ -12,7 +12,7 @@ from django.template.defaultfilters import slugify
 from actstream.actions import is_following, follow, unfollow
 from uuid import uuid4
 
-from settings import STORAGE, VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, COMMON_ERROR_MSG
+from settings import STORAGE, VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, COMMON_ERROR_MSG, RESULT_URL
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
     BoxForm, RunForm, ParamForm, ProfileForm, PasswordForm
 from rbx.models import Project, Box, Run, BoxParam, RunParam, UserProfile, ProjectRight
@@ -93,12 +93,11 @@ def profile_settings(request):
 @login_required
 def follow_user(request, username):
     user = get_object_or_404(User, username=username)
-    if user == request.user:
-        return
-    if is_following(request.user, user):
-        unfollow(request.user, user)
-    else:
-        follow(request.user, user, actor_only=False)
+    if user != request.user:
+        if is_following(request.user, user):
+            unfollow(request.user, user)
+        else:
+            follow(request.user, user, actor_only=False)
     return HttpResponseRedirect(reverse('profile', args=[username]))
 
 
@@ -358,18 +357,28 @@ def explore(request):
 
 
 def set_run_status(request, secret, status):
-    run = get_object_or_404(Run, secret_key=secret)
-    run.set_status(status)
-    return HttpResponse('{status: 0}')
+    try:
+        run = Run.objects.get(secret_key=secret)
+        run.set_status(status)
+        return HttpResponse('{status: 0}')
+    except Run.DoesNotExist:
+        return HttpResponse('{status: 1}')
+    except Exception:
+        return HttpResponse('{status: 2}')
 
 
 @csrf_exempt
 def save_data(request, secret):
-    run = get_object_or_404(Run, secret_key=secret)
     if request.method == 'POST':
         if not 'title' in request.POST or not 'file' in request.FILES:
             return HttpResponse('{status: 2}')
-        location = join(STORAGE, str(run.pk))
+        try:
+            run = Run.objects.get(secret_key=secret)
+        except Run.DoesNotExist:
+            return HttpResponse('{status: 3}')
+        if run.status != 4:
+            return HttpResponse('{status: 4}')
+        location = join(STORAGE, RESULT_URL, run.storage())
         if not isdir(location):
             makedirs(location)
         with open(join(location, request.POST['title']), 'wb+') as destination:

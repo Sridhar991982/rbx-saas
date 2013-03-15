@@ -1,6 +1,7 @@
 import os
 import xmlrpclib
 import xml.etree.cElementTree as etree
+from hashlib import sha1
 from datetime import datetime, timedelta, date
 from django.db import models
 from django.http import Http404
@@ -9,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
-    CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY, STORAGE
+    CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY, STORAGE, RESULT_URL
 from actstream.models import followers, following, target_stream, user_stream, actor_stream
 
 PROJECT_RIGHT = (
@@ -116,6 +117,9 @@ class UserProfile(models.Model):
         stats['week_runs'] = len(week_runs)
         stats['week_time'] = week_runs.filter(status__gt=4).aggregate(Avg('duration'))['duration__avg'] or 0
         return stats
+
+    def link(self):
+        return reverse('profile', args=[self.user.username])
 
 
 class Project(models.Model):
@@ -305,16 +309,15 @@ class Run(models.Model):
 
     def set_status(self, name):
         idx = self.get_status_id(name)
-        if self.status == idx:
-            return
-        self.status = idx
         if idx in (2, 3):
             self.stop(idx)
-        elif idx == 4:
-            self.started = datetime.now()
-        elif idx > 4:
-            self.duration = (datetime.now() - self.started).total_seconds()
-            self.stop(idx)
+        elif self.status < 4:
+            if idx == 4:
+                self.started = datetime.now()
+            elif idx > 4:
+                self.duration = (datetime.now() - self.started).total_seconds()
+                self.stop(idx)
+        self.status = idx
         self.save()
 
     def start(self):
@@ -362,8 +365,15 @@ class Run(models.Model):
                                     self.box.name])
 
     def outputs(self):
-        return [os.path.join(STORAGE, str(self.pk), f)
-                for f in os.listdir(os.path.join(STORAGE, str(self.pk)))]
+        output_dir = os.path.join(STORAGE, RESULT_URL, self.storage())
+        print output_dir
+        if not os.path.isdir(output_dir):
+            return []
+        return [os.path.join(RESULT_URL, self.storage(), f)
+                for f in os.listdir(output_dir)]
+
+    def storage(self):
+        return sha1(str(self.pk) + str(self.launched) + str(self.user)).hexdigest()
 
     class Meta:
         get_latest_by = 'launched'
