@@ -189,11 +189,11 @@ def star_project(request, username, project):
 
 
 def box(request, username, project, box):
-    details = None
+    run = None
     box = Box.retrieve(username, project, box, request.user)
     if request.method == 'POST' and request.user.is_authenticated():
-        launch = RunForm(request.POST, box=box, user=request.user)
-        if launch.is_valid():
+        launch_form = RunForm(request.POST, box=box, user=request.user)
+        if launch_form.is_valid():
             try:
                 run = Run(box=box,
                           user=request.user.get_profile(),
@@ -201,7 +201,7 @@ def box(request, username, project, box):
                           secret_key=str(uuid4()))
                 box_param = BoxParam.objects.filter(box=box)
                 run.save()
-                for param, value in launch.cleaned_data.items():
+                for param, value in launch_form.cleaned_data.items():
                     RunParam(value=(value or ''),
                              run=run,
                              box_param=box_param.get(name=param)).save()
@@ -214,7 +214,7 @@ def box(request, username, project, box):
                     pass
                 messages.error(request, COMMON_ERROR_MSG)
     else:
-        launch = RunForm(box=box, user=request.user)
+        launch_form = RunForm(box=box, user=request.user)
         if 'cancel' in request.GET and request.user.is_authenticated():
             run_id = int(request.GET['cancel'])
             try:
@@ -229,17 +229,12 @@ def box(request, username, project, box):
             run_id = int(request.GET['run'])
             try:
                 run = Run.objects.get(pk=run_id)
-                # TODO: Only return run object
-                details = {'params': RunParam.objects.filter(run=run),
-                           'outputs': run.outputs(),
-                           'run': run}
             except:
-                raise
                 pass
     return render(request, 'box.html', {
         'box': box,
-        'launch': launch,
-        'details': details,
+        'launch_form': launch_form,
+        'run': run,
     })
 
 

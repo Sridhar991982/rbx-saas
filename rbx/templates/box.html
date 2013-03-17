@@ -62,15 +62,15 @@
     <div class="row-fluid">
       <div class="span7">
         <ul class="nav nav-tabs">
-            <li class="{% if not details %}active{% endif %}"><a href="#configure"><i class="icon-beaker"></i> Configure</a></li>
-            <li class="{% if details %}active{% endif %}"><a href="#details"><i class="icon-file"></i> Run details</a></li>
+            <li class="{% if not run %}active{% endif %}"><a href="#configure"><i class="icon-beaker"></i> Configure</a></li>
+            <li class="{% if run %}active{% endif %}"><a href="#details"><i class="icon-file"></i> Run details</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane {% if not details %}active{% endif %}" id="configure">
-                {% crispy launch %}
+            <div class="tab-pane {% if not run %}active{% endif %}" id="configure">
+                {% crispy launch_form %}
             </div>
-            <div class="tab-pane {% if details %}active{% endif %}" id="details">
-                {% if not details %}
+            <div class="tab-pane {% if run %}active{% endif %}" id="details">
+                {% if not run %}
                 <div class="alert">
                   Select a run in the above pane to view it details and results.
                   <i class="icon-circle-arrow-right hidden-phone pull-right icon-large"></i>
@@ -80,18 +80,18 @@
                 <h4>Run informations</h4>
                   <dl class="dl-horizontal">
                     <dt>User<dt>
-                    <dd><a href="{{ details.run.user.link }}">{{ details.run.user }}</a></dd>
+                    <dd><a href="{{ run.user.link }}">{{ run.user }}</a></dd>
                     <dt>Launched<dt>
-                    <dd>{{ details.run.launched }}</dd>
+                    <dd>{{ run.launched }}</dd>
                     <dt>Status</dt>
-                    <dd>{{ details.run.status_text }}</dd>
+                    <dd>{{ run.status_text }}</dd>
                     <dt>Run time<dt>
-                    <dd>{% if details.run.duration %}{{ details.run.duration|elapsed }}
+                    <dd>{% if run.duration %}{{ run.duration|elapsed }}
                         {% else %}N/A{% endif %}</dd>
                   </dl>
                 <h4>Run parameters</h4>
                   <dl class="dl-horizontal">
-                    {% for param in details.params %}
+                    {% for param in run.params %}
                     <dt>{{ param.box_param.name }}</dt>
                     <dd>{{ param.value }}</dd>
                     <dd class="small">{{ param.box_param.constraints|from_json:"help_text" }}</dd>
@@ -101,11 +101,11 @@
                     {% endfor %}
                   </dl>
                 <h4>Run outputs</h4>
-                {% if not details.outputs|length %}
+                {% if not run.outputs|length %}
                 <div class="alert">No output available for this run.</div>
                 {% else %}
                 <ul class="nav nav-pills show-pane">
-                    {% for file in details.outputs %}
+                    {% for file in run.outputs %}
                     <li><a href="#details-{{ file|basename|slugify }}">{{ file|basename }}</a></li>
                     {% endfor %}
                 </ul>
@@ -113,7 +113,7 @@
                 <div class="alert">
                 Select a file on the list above to see the content.
                 </div>
-                {% for file in details.outputs %}
+                {% for file in run.outputs %}
                 <div id="details-{{ file|basename|slugify }}" class="hide">
                     {% if file|is_image %}
                     <a class="btn pull-right btn-mini" href="{% static file %}">raw content</a>
