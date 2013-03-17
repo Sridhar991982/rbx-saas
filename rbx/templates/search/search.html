@@ -35,12 +35,12 @@
         {% if result.content_type == 'rbx.userprofile' %}
         <div class="media border-bottom">
             <div class="pull-left space-right">
-            {% gravatar result.object.gravatar 64 %}
+            {% gravatar result.object.gravatar 45 %}
             </div>
             <div class="media-body">
                 <h4 class="media-heading">{{ result.object|profile_url:result.object.user.username }}</h4>
                 <p>{{ result.object.projects|restrict:user|length }} project{{ result.object.projects|restrict:user|length|pluralize }},
-                {{ result.object.starred|restrict:user|length }} starred<br />
+                {{ result.object.starred|restrict:user|length }} starred,
                 {{ result.object.following|length }} following,
                 {{ result.object.followers|length }} follower{{ result.object.followers|length|pluralize }}
                 </p>
@@ -50,7 +50,7 @@
             {% if result.object|is_visible:user %}
             <div class="media border-bottom">
             <h4 class="media-heading">
-                <i class="icon-{% if result.object.public %}un{% endif %}lock"></i>
+                <i class="gray icon-{% if result.object.public %}un{% endif %}lock"></i>
                 <a href="{{ result.object.link }}">{{ result.object.name }}</a>
                 {% if user.is_authenticated %}
                   {% if user|is_following:result.object %}
@@ -62,9 +62,6 @@
                {{ result.object.boxes|length }} box{{ result.object.stargazers|length|pluralize:"es" }},
                {{ result.object.stargazers|length }} stargazer{{ result.object.stargazers|length|pluralize }}
             </p>
-            {% if result.object.description %}
-            <p>{{ result.object.description|truncatewords:50 }}</p>
-            {% endif %}
             {% endif %}
             </div>
         {% else %}

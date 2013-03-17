@@ -1,6 +1,6 @@
 from os import makedirs
 from json import dumps
-from os.path import join, isdir
+from os.path import join, isdir, basename
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404
@@ -12,7 +12,8 @@ from django.template.defaultfilters import slugify
 from actstream.actions import is_following, follow, unfollow
 from uuid import uuid4
 
-from settings import STORAGE, VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, COMMON_ERROR_MSG, RESULT_URL
+from settings import STORAGE, VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, COMMON_ERROR_MSG, \
+    RESULT_URL, SITE_URL, VM_SRC
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
     BoxForm, RunForm, ParamForm, ProfileForm, PasswordForm
 from rbx.models import Project, Box, Run, BoxParam, RunParam, UserProfile, ProjectRight
@@ -207,6 +208,10 @@ def box(request, username, project, box):
                 run.start()
                 messages.success(request, 'Run #%s launched successfully' % run.pk)
             except Exception:
+                try:
+                    run.set_status('cancelled')
+                except:
+                    pass
                 messages.error(request, COMMON_ERROR_MSG)
     else:
         launch = RunForm(box=box, user=request.user)
@@ -224,6 +229,7 @@ def box(request, username, project, box):
             run_id = int(request.GET['run'])
             try:
                 run = Run.objects.get(pk=run_id)
+                # TODO: Only return run object
                 details = {'params': RunParam.objects.filter(run=run),
                            'outputs': run.outputs(),
                            'run': run}
@@ -360,29 +366,37 @@ def set_run_status(request, secret, status):
     try:
         run = Run.objects.get(secret_key=secret)
         run.set_status(status)
-        return HttpResponse('{status: 0}')
+        return HttpResponse('0')
     except Run.DoesNotExist:
-        return HttpResponse('{status: 1}')
+        return HttpResponse('1')
     except Exception:
-        return HttpResponse('{status: 2}')
+        return HttpResponse('2')
 
 
 @csrf_exempt
 def save_data(request, secret):
     if request.method == 'POST':
         if not 'title' in request.POST or not 'file' in request.FILES:
-            return HttpResponse('{status: 2}')
+            return HttpResponse('2')
         try:
             run = Run.objects.get(secret_key=secret)
         except Run.DoesNotExist:
-            return HttpResponse('{status: 3}')
+            return HttpResponse('3')
         if run.status != 4:
-            return HttpResponse('{status: 4}')
+            return HttpResponse('4')
         location = join(STORAGE, RESULT_URL, run.storage())
         if not isdir(location):
             makedirs(location)
-        with open(join(location, request.POST['title']), 'wb+') as destination:
+        with open(join(location, basename(request.POST['title'])), 'wb+') as destination:
             for chunk in request.FILES['file'].chunks():
                 destination.write(chunk)
-        return HttpResponse('{status: 0}')
-    return HttpResponse('{status: 1}')
+        return HttpResponse('0')
+    return HttpResponse('1')
+
+
+def run_script(request, secret):
+    run = get_object_or_404(Run, secret_key=secret)
+    return render(request, 'run.sh', {'site_url': SITE_URL,
+                                      'vm_src': VM_SRC,
+                                      'run': run},
+                  content_type="text/plain")

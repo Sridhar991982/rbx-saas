@@ -105,7 +105,7 @@ def is_image(filename):
 def is_text(filename):
     _, ext = os.path.splitext(filename)
     return ext.lower() in ('', '.md', '.markdown', '.txt', '.log',
-                           '.properties', '.rst', '.c', '.cpp', '.xml')
+                           '.properties', '.rst', '.c', '.cpp', '.xml', '.err')
 
 
 @register.filter

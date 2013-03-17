@@ -29,6 +29,7 @@ SITE_ID = 1
 USE_I18N = False
 USE_L10N = True
 
+SITE_URL = 'http://localhost:8000'
 STATIC_URL = '/static/'
 
 SECRET_KEY = 'rtu=46ty46r7yq7-o!i*p9l&jj)s%qd^@vs_*g&_7z1-n22$+g'
@@ -102,3 +103,4 @@ PUBLIC_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPD3/cMQtrfIN9z180vj7wh2chyr
 
 RESULT_URL = 'results/'
 STORAGE = '/home/jexhson/code/rbx-django/rbx/static/'
+VM_SRC = '/tmp/src'

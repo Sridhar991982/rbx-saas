@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 from django.views.generic import TemplateView
 
 settings_urls = patterns('rbx.views',
@@ -29,6 +29,7 @@ profile_url = patterns('rbx.views',
 )
 
 run_urls = patterns('rbx.views',
+    url(r'^run$', 'run_script', name='run_script'),
     url(r'^start$', 'set_run_status', {'status': 'Running'}, name='start_run'),
     url(r'^abort$', 'set_run_status', {'status': 'Aborted'}, name='abort_run'),
     url(r'^cancel$', 'set_run_status', {'status': 'Cancelled'}, name='cancel_run'),

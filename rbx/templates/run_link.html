@@ -1,6 +1,7 @@
 {% load gravatar %}
 
-<a href="{{ run.box.link }}?run={{ run.pk }}" class="idx pull-right">#{{ run.pk }}</a>
+<a href="{{ run.box.link }}?run={{ run.pk }}" class="idx pull-right"
+   rel="tooltip" title="View run details">#{{ run.pk }}</a>
 {% if display_user %}
     {% gravatar run.user.gravatar 20 %} 
     {{ run.user|profile_url:run.user.user.username }},

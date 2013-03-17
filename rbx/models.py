@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
-    CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY, STORAGE, RESULT_URL
+    CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY, STORAGE, RESULT_URL, VM_SRC, SITE_URL
 from actstream.models import followers, following, target_stream, user_stream, actor_stream
 
 PROJECT_RIGHT = (
@@ -20,9 +20,12 @@ PROJECT_RIGHT = (
 )
 
 EXECUTOR_SOURCE_TYPE = (
-    ('git clone', 'Git'),
-    ('hg clone', 'Mercurial'),
-    ('svn checkout', 'Subversion'),
+    ('git', 'Git'),
+    ('hg', 'Mercurial'),
+    ('svn', 'Subversion'),
+    ('xz', 'Gzipped tar archive'),
+    ('xj', 'Bzipped tar archive'),
+    ('zip', 'Zip archive'),
 )
 
 RUN_STATUS = (
@@ -229,8 +232,11 @@ class Box(models.Model):
     project = models.ForeignKey(Project, db_index=True)
     name = models.SlugField(max_length=30, db_index=True)
     description = models.TextField(blank=True)
+    # XXX: Rename to source_location
     source_repository = models.CharField(max_length=255)
+    # XXX: Rename to source_type
     repository_type = models.CharField(choices=EXECUTOR_SOURCE_TYPE, max_length=20)
+    # XXX: Rename to System
     os = models.ForeignKey(OperatingSystem)
     before_run = models.CharField(max_length=255, blank=True)
     run_command = models.CharField(max_length=255)
@@ -263,6 +269,22 @@ class Box(models.Model):
 
     def runs(self, user=None):
         return Run.objects.filter(box=self).order_by('-launched')
+
+    def get_sources(self):
+        if self.repository_type in ('hg', 'git'):
+            return '%s clone %s %s' % (self.repository_type,
+                                       self.source_repository,
+                                       VM_SRC)
+        if self.repository_type == 'svn':
+            return 'svn checkout %s %s' % (self.source_repository, VM_SRC)
+        if self.repository_type in ('xz', 'xj'):
+            return 'mkdir -p %s && curl %s | tar %s -C %s' % (VM_SRC,
+                                                              self.source_repository,
+                                                              self.repository_type,
+                                                              VM_SRC)
+        if self.repository_type == 'zip':
+            return 'cd /tmp && curl %s -o src.zip && unzip src.zip -d %s' % (self.source_repository,
+                                                                             VM_SRC)
 
     class Meta:
         unique_together = ('project', 'name')
@@ -311,12 +333,11 @@ class Run(models.Model):
         idx = self.get_status_id(name)
         if idx in (2, 3):
             self.stop(idx)
-        elif self.status < 4:
-            if idx == 4:
-                self.started = datetime.now()
-            elif idx > 4:
-                self.duration = (datetime.now() - self.started).total_seconds()
-                self.stop(idx)
+        elif idx == 4 and self.status < 4:
+            self.started = datetime.now()
+        elif idx > 4 and self.status < 5:
+            self.duration = (datetime.now() - self.started).total_seconds()
+            self.stop(idx)
         self.status = idx
         self.save()
 
@@ -335,7 +356,7 @@ class Run(models.Model):
             raise Exception()
 
     def context(self):
-        return ''
+        return 'rbx_launch="%s",' % os.path.join(SITE_URL, reverse('run_script', args=[self.secret_key]))
 
     def stop(self, reason):
         self.rpc.one.vm.action(CLOUD_AUTH, 'finalize', self.vm_id)
@@ -374,6 +395,9 @@ class Run(models.Model):
 
     def storage(self):
         return sha1(str(self.pk) + str(self.launched) + str(self.user)).hexdigest()
+
+    def params(self):
+        return RunParam.objects.filter(run=self).order_by('box_param__order')
 
     class Meta:
         get_latest_by = 'launched'
