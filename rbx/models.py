@@ -220,7 +220,7 @@ class ProjectRight(models.Model):
                              self.user.user.username])
 
 
-class OperatingSystem(models.Model):
+class System(models.Model):
     identifier = models.CharField(max_length=255)
     name = models.CharField(max_length=50)
 
@@ -232,16 +232,15 @@ class Box(models.Model):
     project = models.ForeignKey(Project, db_index=True)
     name = models.SlugField(max_length=30, db_index=True)
     description = models.TextField(blank=True)
-    # XXX: Rename to source_location
-    source_repository = models.CharField(max_length=255)
-    # XXX: Rename to source_type
-    repository_type = models.CharField(choices=EXECUTOR_SOURCE_TYPE, max_length=20)
-    # XXX: Rename to System
-    os = models.ForeignKey(OperatingSystem)
+    source_location = models.CharField(max_length=255)
+    source_type = models.CharField(choices=EXECUTOR_SOURCE_TYPE,
+                                   default=EXECUTOR_SOURCE_TYPE[0][0],
+                                   max_length=20)
+    system = models.ForeignKey(System)
     before_run = models.CharField(max_length=255, blank=True)
     run_command = models.CharField(max_length=255)
     after_run = models.CharField(max_length=255, blank=True)
-    lifetime = models.PositiveSmallIntegerField(default=3)
+    lifetime = models.PositiveSmallIntegerField()
     allow_runs = models.BooleanField(default=True)
 
     def __unicode__(self):
@@ -271,19 +270,19 @@ class Box(models.Model):
         return Run.objects.filter(box=self).order_by('-launched')
 
     def get_sources(self):
-        if self.repository_type in ('hg', 'git'):
-            return '%s clone %s %s' % (self.repository_type,
-                                       self.source_repository,
+        if self.source_type in ('hg', 'git'):
+            return '%s clone %s %s' % (self.source_type,
+                                       self.source_location,
                                        VM_SRC)
-        if self.repository_type == 'svn':
-            return 'svn checkout %s %s' % (self.source_repository, VM_SRC)
-        if self.repository_type in ('xz', 'xj'):
+        if self.source_type == 'svn':
+            return 'svn checkout %s %s' % (self.source_location, VM_SRC)
+        if self.source_type in ('xz', 'xj'):
             return 'mkdir -p %s && curl %s | tar %s -C %s' % (VM_SRC,
-                                                              self.source_repository,
-                                                              self.repository_type,
+                                                              self.source_location,
+                                                              self.source_type,
                                                               VM_SRC)
-        if self.repository_type == 'zip':
-            return 'cd /tmp && curl %s -o src.zip && unzip src.zip -d %s' % (self.source_repository,
+        if self.source_type == 'zip':
+            return 'cd /tmp && curl %s -o src.zip && unzip src.zip -d %s' % (self.source_location,
                                                                              VM_SRC)
 
     class Meta:
@@ -308,11 +307,12 @@ class Run(models.Model):
     box = models.ForeignKey(Box)
     user = models.ForeignKey(UserProfile)
     launched = models.DateTimeField(auto_now_add=True)
-    started = models.DateTimeField(blank=True)
-    duration = models.FloatField(blank=True)
+    started = models.DateTimeField(null=True, blank=True)
+    duration = models.FloatField(null=True, blank=True)
     status = models.PositiveSmallIntegerField(choices=RUN_STATUS, default=1)
     secret_key = models.CharField(max_length=36)
-    vm_id = models.PositiveSmallIntegerField(blank=True)
+    vm_id = models.PositiveSmallIntegerField(null=True, blank=True)
+    lifetime = models.PositiveSmallIntegerField(default=5)
 
     def __unicode__(self):
         return '%s\'s run #%d' % (self.box.project.name, self.id)
@@ -345,11 +345,11 @@ class Run(models.Model):
         # XXX: Check if user is not over quota
         success, vm_id, _ = self.rpc.one.vm.allocate(
             CLOUD_AUTH,
-            VM_TEMPLATE % {'image': self.box.os.identifier,
+            VM_TEMPLATE % {'image': self.box.system.identifier,
                            'ssh_key': PUBLIC_KEY,
                            'params': self.context()})
         if success:
-            self.status = 0
+            self.status = 1
             self.vm_id = vm_id
         else:
             self.status = 2
@@ -361,7 +361,8 @@ class Run(models.Model):
         return 'rbx_launch="%s",' % os.path.join(SITE_URL, reverse('run_script', args=[self.secret_key]))
 
     def stop(self, reason):
-        self.rpc.one.vm.action(CLOUD_AUTH, 'finalize', self.vm_id)
+        if self.vm_id:
+            self.rpc.one.vm.action(CLOUD_AUTH, 'finalize', self.vm_id)
 
     def state(self):
         info = self._info(self.vm_id)
@@ -389,7 +390,6 @@ class Run(models.Model):
 
     def outputs(self):
         output_dir = os.path.join(STORAGE, RESULT_URL, self.storage())
-        print output_dir
         if not os.path.isdir(output_dir):
             return []
         return [os.path.join(RESULT_URL, self.storage(), f)

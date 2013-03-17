@@ -44,13 +44,13 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'rbx', ['ProjectRight'])
 
-        # Adding model 'OperatingSystem'
-        db.create_table(u'rbx_operatingsystem', (
+        # Adding model 'System'
+        db.create_table(u'rbx_system', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('identifier', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
         ))
-        db.send_create_signal(u'rbx', ['OperatingSystem'])
+        db.send_create_signal(u'rbx', ['System'])
 
         # Adding model 'Box'
         db.create_table(u'rbx_box', (
@@ -58,13 +58,13 @@ class Migration(SchemaMigration):
             ('project', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.Project'])),
             ('name', self.gf('django.db.models.fields.SlugField')(max_length=30)),
             ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('source_repository', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('repository_type', self.gf('django.db.models.fields.CharField')(max_length=20)),
-            ('os', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.OperatingSystem'])),
+            ('source_location', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('source_type', self.gf('django.db.models.fields.CharField')(default='git', max_length=20)),
+            ('system', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.System'])),
             ('before_run', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
             ('run_command', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('after_run', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('lifetime', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=3)),
+            ('lifetime', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
             ('allow_runs', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
         db.send_create_signal(u'rbx', ['Box'])
@@ -91,11 +91,12 @@ class Migration(SchemaMigration):
             ('box', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.Box'])),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.UserProfile'])),
             ('launched', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('started', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('duration', self.gf('django.db.models.fields.FloatField')(null=True)),
+            ('started', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
+            ('duration', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
             ('status', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1)),
             ('secret_key', self.gf('django.db.models.fields.CharField')(max_length=36)),
-            ('vm_id', self.gf('django.db.models.fields.PositiveSmallIntegerField')(null=True)),
+            ('vm_id', self.gf('django.db.models.fields.PositiveSmallIntegerField')(null=True, blank=True)),
+            ('lifetime', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=5)),
         ))
         db.send_create_signal(u'rbx', ['Run'])
 
@@ -133,8 +134,8 @@ class Migration(SchemaMigration):
         # Deleting model 'ProjectRight'
         db.delete_table(u'rbx_projectright')
 
-        # Deleting model 'OperatingSystem'
-        db.delete_table(u'rbx_operatingsystem')
+        # Deleting model 'System'
+        db.delete_table(u'rbx_system')
 
         # Deleting model 'Box'
         db.delete_table(u'rbx_box')
@@ -210,13 +211,13 @@ class Migration(SchemaMigration):
             'before_run': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'lifetime': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '3'}),
+            'lifetime': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
             'name': ('django.db.models.fields.SlugField', [], {'max_length': '30'}),
-            'os': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.OperatingSystem']"}),
             'project': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.Project']"}),
-            'repository_type': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
             'run_command': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'source_repository': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+            'source_location': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'source_type': ('django.db.models.fields.CharField', [], {'default': "'git'", 'max_length': '20'}),
+            'system': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.System']"})
         },
         u'rbx.boxparam': {
             'Meta': {'object_name': 'BoxParam'},
@@ -234,12 +235,6 @@ class Migration(SchemaMigration):
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'request_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
-        },
-        u'rbx.operatingsystem': {
-            'Meta': {'object_name': 'OperatingSystem'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'identifier': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'rbx.project': {
             'Meta': {'unique_together': "(('owner', 'slug'),)", 'object_name': 'Project'},
@@ -262,14 +257,15 @@ class Migration(SchemaMigration):
         u'rbx.run': {
             'Meta': {'object_name': 'Run'},
             'box': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.Box']"}),
-            'duration': ('django.db.models.fields.FloatField', [], {'null': 'True'}),
+            'duration': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'launched': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'lifetime': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '5'}),
             'secret_key': ('django.db.models.fields.CharField', [], {'max_length': '36'}),
-            'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.UserProfile']"}),
-            'vm_id': ('django.db.models.fields.PositiveSmallIntegerField', [], {'null': 'True'})
+            'vm_id': ('django.db.models.fields.PositiveSmallIntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         u'rbx.runparam': {
             'Meta': {'object_name': 'RunParam'},
@@ -277,6 +273,12 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'run': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.Run']"}),
             'value': ('django.db.models.fields.TextField', [], {})
+        },
+        u'rbx.system': {
+            'Meta': {'object_name': 'System'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'identifier': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'rbx.userprofile': {
             'Meta': {'object_name': 'UserProfile'},

@@ -9,7 +9,7 @@ var RBX = (function () {
         _submitModalChanges()
         _modalAsyncCall()
 
-        _improveRepositoryTypeSelection()
+        _improveSourceTypeSelection()
         _newBoxForm()
 
         _navTabs()
@@ -42,7 +42,8 @@ var RBX = (function () {
         $('.modal-fragment').on('click', function() {
             var target = $(this).attr('data-target')
             $(target).modal({keyboard: false})
-            $(target + ' .modal-body').load($(this).attr('href') + ' #fragment', _improveRepositoryTypeSelection)
+            $(target + ' .modal-body').load($(this).attr('href') + ' #fragment',
+                                            _improveSourceTypeSelection)
             setTimeout(_populateReloadLocation, 600)
             return false;
         })
@@ -54,7 +55,7 @@ var RBX = (function () {
                 form = modal.find('form')
             modal.find('.modal-body').load(form.attr('action') + ' #fragment',
                 form.serializeArray(), function () {
-                _improveRepositoryTypeSelection()
+                _improveSourceTypeSelection()
                 _modalSubmitEvents(modal)
             })
             return false;
@@ -133,9 +134,9 @@ var RBX = (function () {
         activeTab && activeTab.tab('show')
     }
 
-    var _improveRepositoryTypeSelection = function () {
-        $('#id_source_repository').parent().append($('#id_repository_type').clone())
-        $('#div_id_repository_type').remove()
+    var _improveSourceTypeSelection = function () {
+        $('#id_source_location').parent().append($('#id_source_type').clone())
+        $('#div_id_source_type').remove()
         _selectToDropdown()
     }
 
@@ -143,7 +144,7 @@ var RBX = (function () {
         $('.new_box').on('click', function () {
             $(this).parent().find('.box-list').append($('#tpl_box_form').html())
             $(this).remove()
-            _improveRepositoryTypeSelection()
+            _improveSourceTypeSelection()
         })
     }
 
@@ -172,7 +173,8 @@ var RBX = (function () {
 
         $(document).on('click', '#param_type a', function () {
             $('#new_param').load(location.pathname + '/param/'
-                                 + $(this).attr('data-type') + ' #fragment', _improveRepositoryTypeSelection)
+                                 + $(this).attr('data-type') + ' #fragment',
+                                 _improveSourceTypeSelection)
             add_button.popover('hide')
             add_button.parent().hide()
             return false
@@ -182,7 +184,8 @@ var RBX = (function () {
     var _submitParamEdit = function () {
         $(document).on('click', '#configure .save_param', function () {
             var form = $(this).parent().parent().parent()
-            form.parent().load(form.attr('action') + ' #fragment', form.serializeArray(), _improveRepositoryTypeSelection)
+            form.parent().load(form.attr('action') + ' #fragment', form.serializeArray(),
+                               _improveSourceTypeSelection)
             return false
         })
     }
@@ -224,7 +227,8 @@ var RBX = (function () {
 
     var _modalAsyncCall = function () {
         $(document).on('click', '.modal.in .async-call', function () {
-            $('.modal-body').load($(this).attr('href') + ' #fragment', _improveRepositoryTypeSelection)
+            $('.modal-body').load($(this).attr('href') + ' #fragment',
+                                  _improveSourceTypeSelection)
             _modalSubmitEvents($('.modal.in'))
             return false
         })

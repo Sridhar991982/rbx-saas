@@ -11,8 +11,7 @@ from crispy_forms.layout import Layout, Field, Submit, Div, HTML, Button
 from crispy_forms.bootstrap import PrependedText
 
 from settings import EDIT_RIGHT
-from rbx.models import UserProfile, Project, Invitation, Box, \
-    OperatingSystem, BoxParam, EXECUTOR_SOURCE_TYPE
+from rbx.models import UserProfile, Project, Invitation, Box, BoxParam, System
 
 PROJECT_VISIBILITY = (
     ('public', mark_safe('<i class="icon-unlock icon-large"></i> Anyone can \
@@ -109,10 +108,6 @@ class NewProjectForm(forms.Form):
 
 class EditProjectForm(forms.ModelForm):
 
-    class Meta:
-        model = Project
-        fields = ('name', 'description', 'public')
-
     name = forms.CharField(
         widget=forms.TextInput(
             attrs={'class': 'input-block-level',
@@ -121,6 +116,10 @@ class EditProjectForm(forms.ModelForm):
         widget=forms.Textarea(attrs={'class': 'input-block-level',
             'placeholder': 'Add project description...'}))
     public = forms.BooleanField(required=False)
+
+    class Meta:
+        model = Project
+        fields = ('name', 'description', 'public')
 
 
 class BoxForm(forms.ModelForm):
@@ -134,13 +133,11 @@ class BoxForm(forms.ModelForm):
         self.fields['project'] = forms.ModelChoiceField(Project.objects,
                                                         widget=forms.HiddenInput(),
                                                         initial=project)
-        self.fields['repository_type'] = forms.ChoiceField(choices=EXECUTOR_SOURCE_TYPE)
-        self.fields['os'] = forms.ModelChoiceField(OperatingSystem.objects,
-                                                   empty_label=None,
-                                                   label='Operating System')
+        self.fields['system'] = forms.ModelChoiceField(System.objects,
+                                                       empty_label=None)
         self.fields['lifetime'] = forms.DecimalField(min_value=1,
                                                      max_value=120,
-                                                     initial=3,
+                                                     initial=5,
                                                      help_text='minute(s)',
                                                      label='Max run time')
         self.fields['reload-location'] = forms.CharField(max_length=120, required=False,
@@ -157,11 +154,11 @@ class BoxForm(forms.ModelForm):
             Field('description', css_class='input-block-level'),
             Field('lifetime', css_class='input-mini'),
             Div(
-                'repository_type',
-                'source_repository',
+                'source_type',
+                'source_location',
                 css_class='input-append'
             ),
-            Field('os', css_class='input-block-level'),
+            Field('system', css_class='input-block-level'),
             Field('before_run', css_class='input-block-level'),
             Field('run_command', css_class='input-block-level'),
             Field('after_run', css_class='input-block-level'),
@@ -190,6 +187,12 @@ class RunForm(forms.Form):
         can_edit = box.project.is_allowed(user, EDIT_RIGHT)
         layout = []
         controls = []
+        self.fields['lifetime'] = forms.DecimalField(min_value=1,
+                                                     max_value=box.lifetime,
+                                                     initial=box.lifetime,
+                                                     help_text='minute(s)',
+                                                     label='Max run time')
+        layout.append(Field('lifetime', css_class='input-mini'))
         for param in params:
             prop = self.build_help(param)
             if can_edit:
@@ -199,15 +202,17 @@ class RunForm(forms.Form):
             self.fields[param.name] = getattr(forms, param.subtype)(**prop)
             layout.append(Div(Field(param.name, css_class=param.css_class),
                               css_class="parameter", data_param="%d" % param.pk))
-        if not len(layout):
-            layout.append(HTML('<p><small>No parameters available.</small></p>'))
         layout.append(Div(id='new_param'))
         if can_edit:
             controls.append(HTML('<a href="{{ box.link }}/param/text" ' +
                                  'id="add_param" data-title="%s" class="btn space-right">%s</a>'
                                  % ('Parameter type', 'Add parameter')))
         if box.allow_runs:
-            controls.append(Submit('run_project', 'Run project', css_class='btn btn-primary'))
+            if user.is_authenticated():
+                controls.append(Submit('run_project', 'Run project', css_class='btn btn-primary'))
+            else:
+                controls.append(HTML('<a href="%s" ' % reverse('login') +
+                                   'class="btn btn-primary">Sign in to launch run</a>'))
         else:
             layout.append(HTML('<p><small>New runs are disabled.</small></p>'))
         if len(controls):

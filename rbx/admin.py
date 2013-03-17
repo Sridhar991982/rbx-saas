@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from rbx.models import UserProfile, Project, ProjectRight, \
-    Box, BoxParam, Run, RunParam, Invitation, OperatingSystem
+    Box, BoxParam, Run, RunParam, Invitation, System
 
 
 class UserProfileInline(admin.StackedInline):
@@ -55,4 +55,4 @@ admin.site.register(Project, ProjectAdmin)
 admin.site.register(Box, BoxAdmin)
 admin.site.register(Run, RunAdmin)
 admin.site.register(Invitation, InvitationAdmin)
-admin.site.register(OperatingSystem)
+admin.site.register(System)

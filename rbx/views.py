@@ -63,10 +63,9 @@ def profile_settings(request):
                 user.set_password(password_form.cleaned_data['new_password'])
                 user.save()
                 messages.success(request, 'Password successfully updated')
-                return HttpResponseRedirect(reverse('settings_profile'))
             except:
-                raise
                 messages.error(request, COMMON_ERROR_MSG)
+            return HttpResponseRedirect(reverse('settings_profile'))
     else:
         password_form = PasswordForm(username=request.user)
     if request.method == 'POST' and'update_profile' in request.POST:
@@ -80,10 +79,9 @@ def profile_settings(request):
                     setattr(profile, field, value)
                 profile.save()
                 messages.success(request, 'Profile successfully updated')
-                return HttpResponseRedirect(reverse('settings_profile'))
             except:
-                raise
                 messages.error(request, COMMON_ERROR_MSG)
+            return HttpResponseRedirect(reverse('settings_profile'))
     else:
         profile_form = ProfileForm(profile=request.user.get_profile())
     return render(request, 'profile_settings.html', {'profile_form': profile_form,
@@ -136,7 +134,7 @@ def project(request, username, project):
                            project=project,
                            form_class='well',
                            initial={'project': project},
-                           action=project.link())
+                           action=project.link('boxes'))
         if box_form.is_valid():
             try:
                 new_box = box_form.save()
@@ -195,38 +193,40 @@ def box(request, username, project, box):
         launch_form = RunForm(request.POST, box=box, user=request.user)
         if launch_form.is_valid():
             try:
-                run = Run(box=box,
-                          user=request.user.get_profile(),
-                          status=1,
-                          secret_key=str(uuid4()))
+                new_run = Run(box=box,
+                              user=request.user.get_profile(),
+                              status=1,
+                              secret_key=str(uuid4()))
+                new_run.lifetime = launch_form.cleaned_data.pop('lifetime')
+                new_run.save()
                 box_param = BoxParam.objects.filter(box=box)
-                run.save()
                 for param, value in launch_form.cleaned_data.items():
                     RunParam(value=(value or ''),
-                             run=run,
+                             run=new_run,
                              box_param=box_param.get(name=param)).save()
-                run.start()
-                messages.success(request, 'Run #%s launched successfully' % run.pk)
+                new_run.start()
+                messages.success(request, 'Run #%s launched successfully' % new_run.pk)
             except Exception:
                 messages.error(request, COMMON_ERROR_MSG)
+            return HttpResponseRedirect(box.link())
     else:
         launch_form = RunForm(box=box, user=request.user)
         if 'cancel' in request.GET and request.user.is_authenticated():
-            run_id = int(request.GET['cancel'])
             try:
+                run_id = int(request.GET['cancel'])
                 run = Run.objects.get(pk=run_id)
                 if run.user == request.user.get_profile():
                     if run.status in (1, 4):
                         run.set_status('cancelled')
                     messages.success(request, 'Run #%s cancelled successfully' % run_id)
             except:
-                pass
+                messages.error(request, 'Sorry, we where unable to cancel this run...')
         elif 'run' in request.GET:
-            run_id = int(request.GET['run'])
             try:
-                run = Run.objects.get(pk=run_id)
+                run_id = int(request.GET['run'])
+                run = Run.objects.get(pk=run_id, box=box)
             except:
-                pass
+                messages.error(request, 'Sorry, we where unable to find this run...')
     return render(request, 'box.html', {
         'box': box,
         'launch_form': launch_form,
