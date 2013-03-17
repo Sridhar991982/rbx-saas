@@ -348,9 +348,11 @@ class Run(models.Model):
             VM_TEMPLATE % {'image': self.box.os.identifier,
                            'ssh_key': PUBLIC_KEY,
                            'params': self.context()})
-        self.vm_id = vm_id
-        if not success:
+        if success:
             self.status = 0
+            self.vm_id = vm_id
+        else:
+            self.status = 2
         self.save()
         if not success:
             raise Exception()

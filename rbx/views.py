@@ -208,10 +208,6 @@ def box(request, username, project, box):
                 run.start()
                 messages.success(request, 'Run #%s launched successfully' % run.pk)
             except Exception:
-                try:
-                    run.set_status('cancelled')
-                except:
-                    pass
                 messages.error(request, COMMON_ERROR_MSG)
     else:
         launch_form = RunForm(box=box, user=request.user)
