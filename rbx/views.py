@@ -214,10 +214,10 @@ def box(request, username, project, box):
         if 'cancel' in request.GET and request.user.is_authenticated():
             try:
                 run_id = int(request.GET['cancel'])
-                run = Run.objects.get(pk=run_id)
-                if run.user == request.user.get_profile():
-                    if run.status in (1, 4):
-                        run.set_status('cancelled')
+                cancelled_run = Run.objects.get(pk=run_id)
+                if cancelled_run.user == request.user.get_profile():
+                    if cancelled_run.status in (1, 4):
+                        cancelled_run.set_status('cancelled')
                     messages.success(request, 'Run #%s cancelled successfully' % run_id)
             except:
                 messages.error(request, 'Sorry, we where unable to cancel this run...')

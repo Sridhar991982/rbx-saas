@@ -56,14 +56,14 @@ size     = 2048,
 target   = "hdb",
 readonly = "no"
 ]
-NIC = [ network_uname=oneadmin,network = "public" ]
+NIC = [ network_uname=oneadmin,network = "%(network)s" ]
 GRAPHICS = [
 port = "-1",
 type = "vnc"
 ]
 CONTEXT = [
 public_key = "%(ssh_key)s",
-%(params)s
+%(context)s
 target = "hdd"
 ]
 '''
@@ -341,18 +341,19 @@ class Run(models.Model):
         self.status = idx
         self.save()
 
-    def start(self):
+    def start(self, network='private'):
         # XXX: Check if user is not over quota
         success, vm_id, _ = self.rpc.one.vm.allocate(
             CLOUD_AUTH,
             VM_TEMPLATE % {'image': self.box.system.identifier,
+                           'network': network,
                            'ssh_key': PUBLIC_KEY,
-                           'params': self.context()})
+                           'context': self.context()})
         if success:
             self.status = 1
             self.vm_id = vm_id
         else:
-            self.status = 2
+            self.status = 0
         self.save()
         if not success:
             raise Exception()
