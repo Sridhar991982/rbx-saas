@@ -358,7 +358,9 @@ class Run(models.Model):
             raise Exception()
 
     def context(self):
-        return 'rbx_launch="%s",' % os.path.join(SITE_URL, reverse('run_script', args=[self.secret_key]))
+        return 'rbx_launch="%s",' % os.path.join(SITE_URL,
+                                                 reverse('run_script',
+                                                         args=[self.secret_key]))
 
     def stop(self, reason):
         if self.vm_id:
@@ -366,7 +368,10 @@ class Run(models.Model):
 
     def state(self):
         info = self._info(self.vm_id)
-        # TODO: Parse XML state
+        vm_state = int(info.find('STATE').text)
+        states = ['init', 'pending', 'hold', 'active', 'stopped',
+                  'suspended', 'done', 'failed']
+        return states[vm_state]
 
     def ip(self):
         return self._info(self.vm_id).find('TEMPLATE/NIC').find('IP').text
