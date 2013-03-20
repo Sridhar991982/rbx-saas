@@ -221,6 +221,7 @@ def box(request, username, project, box):
                     messages.success(request, 'Run #%s cancelled successfully' % run_id)
             except:
                 messages.error(request, 'Sorry, we where unable to cancel this run...')
+            return HttpResponseRedirect(box.link())
         elif 'run' in request.GET:
             try:
                 run_id = int(request.GET['run'])

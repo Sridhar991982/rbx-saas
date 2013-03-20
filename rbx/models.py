@@ -1,6 +1,8 @@
 import os
 import xmlrpclib
 import xml.etree.cElementTree as etree
+from haystack import indexes
+from haystack import site
 from hashlib import sha1
 from datetime import datetime, timedelta, date
 from django.db import models
@@ -372,6 +374,13 @@ class Run(models.Model):
         vm_state = int(info.find('STATE').text)
         states = ['init', 'pending', 'hold', 'active', 'stopped',
                   'suspended', 'done', 'failed']
+        lcm_states = ['lcm_init', 'prolog', 'boot', 'running', 'migrate',
+                      'save_stop', 'save_suspend', 'save_migrate', 'prolog_migrate',
+                      'prolog_resume', 'epilog_stop', 'epilog', 'shutdown',
+                      'cancel', 'failure', 'delete', 'unknown']
+        if states[vm_state] == 'active':
+            state = int(info.find('LCM_STATE').text)
+            return lcm_states[state]
         return states[vm_state]
 
     def ip(self):
@@ -428,3 +437,27 @@ class Invitation(models.Model):
 
     def __unicode__(self):
         return 'Invitation request: %s' % self.email
+
+
+class UserProfileIndex(indexes.SearchIndex):
+    text = indexes.CharField(document=True, use_template=True)
+
+    def index_queryset(self):
+        return UserProfile.objects.filter(user__date_joined__lte=datetime.now())
+
+
+
+class ProjectIndex(indexes.SearchIndex):
+    text = indexes.CharField(document=True, use_template=True)
+    name = indexes.CharField(model_attr='name')
+    owner = indexes.CharField(model_attr='owner')
+    created = indexes.DateTimeField(model_attr='created')
+    updated = indexes.DateTimeField(model_attr='updated')
+    description = indexes.CharField(model_attr='description')
+
+    def index_queryset(self):
+        return Project.objects.filter(created__lte=datetime.now())
+
+
+site.register(UserProfile, UserProfileIndex)
+site.register(Project, ProjectIndex)
