@@ -93,7 +93,7 @@ VIEW_RIGHT = 0
 EDIT_RIGHT = 1
 ADMIN_RIGHT = 2
 
-HAYSTACK_SITECONF = 'rbx.search_sites'
+HAYSTACK_SITECONF = 'rbx.models'
 HAYSTACK_SEARCH_ENGINE = 'whoosh'
 HAYSTACK_WHOOSH_PATH = '/tmp/whoosh/rbx_index'
 
@@ -104,3 +104,5 @@ PUBLIC_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPD3/cMQtrfIN9z180vj7wh2chyr
 RESULT_URL = 'results/'
 STORAGE = '/home/jexhson/code/rbx-django/rbx/static/'
 VM_SRC = '/tmp/src'
+
+VM_POLLING = 120  # In seconds
