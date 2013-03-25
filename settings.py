@@ -30,6 +30,7 @@ USE_I18N = False
 USE_L10N = True
 
 SITE_URL = 'http://localhost:8000'
+#SITE_URL = 'http://www.runinthebox.com'
 STATIC_URL = '/static/'
 
 SECRET_KEY = 'rtu=46ty46r7yq7-o!i*p9l&jj)s%qd^@vs_*g&_7z1-n22$+g'

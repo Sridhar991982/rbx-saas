@@ -58,6 +58,7 @@ size     = 2048,
 target   = "hdb",
 readonly = "no"
 ]
+%(pdisk)s
 NIC = [ network_uname=oneadmin,network = "%(network)s" ]
 GRAPHICS = [
 port = "-1",
@@ -69,6 +70,17 @@ public_key = "%(ssh_key)s",
 target = "hdd"
 ]
 '''
+
+PDISK_TEMPLATE = 'DISK=[SOURCE=pdisk:onehost-7.lal.in2p3.fr:8445:%s,\
+                        TARGET=hdc, TYPE=block]'
+
+VM_STATES = ['init', 'pending', 'hold', 'active', 'stopped',
+             'suspended', 'done', 'failed']
+
+VM_LCM_STATES = ['lcm_init', 'prolog', 'boot', 'running', 'migrate',
+                 'save_stop', 'save_suspend', 'save_migrate', 'prolog_migrate',
+                 'prolog_resume', 'epilog_stop', 'epilog', 'shutdown',
+                 'cancel', 'failure', 'delete', 'unknown']
 
 
 class UserProfile(models.Model):
@@ -343,13 +355,16 @@ class Run(models.Model):
         self.status = idx
         self.save()
 
-    def start(self, network='private'):
+    def start(self, network='private', pdisk='', public_key=False):
         # XXX: Check if user is not over quota
+        if pdisk:
+            pdisk = PDISK_TEMPLATE % pdisk
         success, vm_id, _ = self.rpc.one.vm.allocate(
             CLOUD_AUTH,
             VM_TEMPLATE % {'image': self.box.system.identifier,
                            'network': network,
-                           'ssh_key': PUBLIC_KEY,
+                           'ssh_key': public_key and PUBLIC_KEY or '',
+                           'pdisk': pdisk,
                            'context': self.context()})
         if success:
             self.status = 1
@@ -358,12 +373,12 @@ class Run(models.Model):
             self.status = 0
         self.save()
         if not success:
-            raise Exception()
+            # vm_id contains the error message
+            raise Exception(vm_id)
 
     def context(self):
-        return 'rbx_launch="%s",' % os.path.join(SITE_URL,
-                                                 reverse('run_script',
-                                                         args=[self.secret_key]))
+        return 'script_exec="curl %s | bash",' % (SITE_URL + reverse('run_script',
+                                                                     args=[self.secret_key]))
 
     def stop(self, reason):
         if self.vm_id:
@@ -372,16 +387,10 @@ class Run(models.Model):
     def state(self):
         info = self._info(self.vm_id)
         vm_state = int(info.find('STATE').text)
-        states = ['init', 'pending', 'hold', 'active', 'stopped',
-                  'suspended', 'done', 'failed']
-        lcm_states = ['lcm_init', 'prolog', 'boot', 'running', 'migrate',
-                      'save_stop', 'save_suspend', 'save_migrate', 'prolog_migrate',
-                      'prolog_resume', 'epilog_stop', 'epilog', 'shutdown',
-                      'cancel', 'failure', 'delete', 'unknown']
-        if states[vm_state] == 'active':
+        if VM_STATES[vm_state] == 'active':
             state = int(info.find('LCM_STATE').text)
-            return lcm_states[state]
-        return states[vm_state]
+            return VM_LCM_STATES[state]
+        return VM_STATES[vm_state]
 
     def ip(self):
         return self._info(self.vm_id).find('TEMPLATE/NIC').find('IP').text
@@ -444,7 +453,6 @@ class UserProfileIndex(indexes.SearchIndex):
 
     def index_queryset(self):
         return UserProfile.objects.filter(user__date_joined__lte=datetime.now())
-
 
 
 class ProjectIndex(indexes.SearchIndex):
