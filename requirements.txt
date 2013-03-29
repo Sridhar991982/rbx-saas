@@ -9,6 +9,6 @@ django-markdown-deux==1.0.3
 django-simple-gravatar==1.0.1
 docutils==0.10
 markdown2==2.1.0
-paramiko==1.9.0
+paramiko==1.10.0
 pycrypto==2.6
 wsgiref==0.1.2

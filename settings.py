@@ -100,6 +100,8 @@ HAYSTACK_WHOOSH_PATH = '/tmp/whoosh/rbx_index'
 
 CLOUD_AUTH = 'jexhson:stratusBldy1'
 CLOUD_ENDPOINT = 'https://%s@cloud.lal.stratuslab.eu:2634/pswd/xmlrpc' % CLOUD_AUTH
+CLOUD_PDISK = 'centos-master.grnet.stratuslab.eu:8445'
+#CLOUD_PDISK = 'onehost-7.lal.in2p3.fr:8445'
 PUBLIC_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPD3/cMQtrfIN9z180vj7wh2chyrgH1qjBn6VrxZ/7s1a7lxRbb8e+ghpisg+wn63qQ8EbQ+6lAqO2sNvfBzTwRik51zvwlAzIGStSJAXex9IM6txpaQQl2MmAn6zRC7mvXgrPfE8Ey3TZkCHUBFjG2bjv9Qaa6udEmZd2bwD0N/X+h3QyeMfdrINRFlHKoCoEn5w0k1VtLzllSL/ovJLfGpyhSmx7W7JHtbOIW0GGLFwpHubb38quboHqtzWyGTFxVCxZSoC+XI/sli1XSsqPIuuFLqgVCtE112ESkNKb39i8AZL7+gh102B34UnSl05PJHJNb0Yv3Xq77FDRu8Ct'
 
 RESULT_URL = 'results/'

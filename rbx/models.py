@@ -11,7 +11,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, \
+from settings import VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, CLOUD_PDISK, \
     CLOUD_ENDPOINT, CLOUD_AUTH, PUBLIC_KEY, STORAGE, RESULT_URL, VM_SRC, SITE_URL
 from actstream.models import followers, following, target_stream, user_stream, actor_stream
 
@@ -71,7 +71,7 @@ target = "hdd"
 ]
 '''
 
-PDISK_TEMPLATE = 'DISK=[SOURCE=pdisk:onehost-7.lal.in2p3.fr:8445:%s,\
+PDISK_TEMPLATE = 'DISK=[SOURCE=pdisk:' + CLOUD_PDISK + ':%s,\
                         TARGET=hdc, TYPE=block]'
 
 VM_STATES = ['init', 'pending', 'hold', 'active', 'stopped',
