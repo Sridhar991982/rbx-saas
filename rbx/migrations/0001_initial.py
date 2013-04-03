@@ -49,8 +49,35 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('identifier', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('script_type', self.gf('django.db.models.fields.CharField')(max_length=50)),
         ))
         db.send_create_signal(u'rbx', ['System'])
+
+        # Adding model 'SoftwareCategory'
+        db.create_table(u'rbx_softwarecategory', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
+        ))
+        db.send_create_signal(u'rbx', ['SoftwareCategory'])
+
+        # Adding model 'SoftwareInstallation'
+        db.create_table(u'rbx_softwareinstallation', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('method', self.gf('django.db.models.fields.TextField')()),
+        ))
+        db.send_create_signal(u'rbx', ['SoftwareInstallation'])
+
+        # Adding model 'Software'
+        db.create_table(u'rbx_software', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('label', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.SoftwareCategory'])),
+            ('install', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.SoftwareInstallation'])),
+            ('system', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.System'])),
+        ))
+        db.send_create_signal(u'rbx', ['Software'])
 
         # Adding model 'Box'
         db.create_table(u'rbx_box', (
@@ -136,6 +163,15 @@ class Migration(SchemaMigration):
 
         # Deleting model 'System'
         db.delete_table(u'rbx_system')
+
+        # Deleting model 'SoftwareCategory'
+        db.delete_table(u'rbx_softwarecategory')
+
+        # Deleting model 'SoftwareInstallation'
+        db.delete_table(u'rbx_softwareinstallation')
+
+        # Deleting model 'Software'
+        db.delete_table(u'rbx_software')
 
         # Deleting model 'Box'
         db.delete_table(u'rbx_box')
@@ -274,11 +310,32 @@ class Migration(SchemaMigration):
             'run': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.Run']"}),
             'value': ('django.db.models.fields.TextField', [], {})
         },
+        u'rbx.software': {
+            'Meta': {'object_name': 'Software'},
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.SoftwareCategory']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'install': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.SoftwareInstallation']"}),
+            'label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'system': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.System']"})
+        },
+        u'rbx.softwarecategory': {
+            'Meta': {'object_name': 'SoftwareCategory'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'rbx.softwareinstallation': {
+            'Meta': {'object_name': 'SoftwareInstallation'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'method': ('django.db.models.fields.TextField', [], {}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
         u'rbx.system': {
             'Meta': {'object_name': 'System'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'identifier': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            'script_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'rbx.userprofile': {
             'Meta': {'object_name': 'UserProfile'},

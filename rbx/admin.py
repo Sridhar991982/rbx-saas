@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from rbx.models import UserProfile, Project, ProjectRight, \
-    Box, BoxParam, Run, RunParam, Invitation, System
+    Box, BoxParam, Run, RunParam, Invitation, System, Software, \
+    SoftwareCategory, SoftwareInstallation
 
 
 class UserProfileInline(admin.StackedInline):
@@ -49,10 +50,21 @@ class InvitationAdmin(admin.ModelAdmin):
     list_display = ('email', 'request_date')
 
 
+class SoftwareParamInline(admin.TabularInline):
+    model = Software
+
+
+class SystemAdmin(admin.ModelAdmin):
+    model = System
+    inlines = (SoftwareParamInline,)
+
+
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Box, BoxAdmin)
 admin.site.register(Run, RunAdmin)
 admin.site.register(Invitation, InvitationAdmin)
-admin.site.register(System)
+admin.site.register(System, SystemAdmin)
+admin.site.register(SoftwareCategory)
+admin.site.register(SoftwareInstallation)

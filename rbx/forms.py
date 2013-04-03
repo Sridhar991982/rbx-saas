@@ -159,6 +159,12 @@ class BoxForm(forms.ModelForm):
                 css_class='input-append'
             ),
             Field('system', css_class='input-block-level'),
+            Div(
+                HTML('<label class="control-label">Install software</label>'),
+                HTML('<div id="system_software" class="controls">'
+                        + 'Please select a system</div>'),
+                css_class='control-group',
+            ),
             Field('before_run', css_class='input-block-level'),
             Field('run_command', css_class='input-block-level'),
             Field('after_run', css_class='input-block-level'),

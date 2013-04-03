@@ -82,6 +82,10 @@ VM_LCM_STATES = ['lcm_init', 'prolog', 'boot', 'running', 'migrate',
                  'prolog_resume', 'epilog_stop', 'epilog', 'shutdown',
                  'cancel', 'failure', 'delete', 'unknown']
 
+RUN_SCRIPT = (
+    ('bash', 'Bash based script'),
+)
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
@@ -237,9 +241,39 @@ class ProjectRight(models.Model):
 class System(models.Model):
     identifier = models.CharField(max_length=255)
     name = models.CharField(max_length=50)
+    script_type = models.CharField(max_length=50, choices=RUN_SCRIPT)
 
     def __unicode__(self):
         return self.name
+
+
+class SoftwareCategory(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return '%s software category' % self.name
+
+    class Meta:
+        verbose_name_plural = "Software Categories"
+
+
+class SoftwareInstallation(models.Model):
+    name = models.CharField(max_length=100)
+    method = models.TextField()
+
+    def __unicode__(self):
+        return '%s software installation method' % self.name
+
+
+class Software(models.Model):
+    label = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(SoftwareCategory)
+    install = models.ForeignKey(SoftwareInstallation)
+    system = models.ForeignKey(System)
+
+    def __unicode__(self):
+        return '%s software' % self.label
 
 
 class Box(models.Model):

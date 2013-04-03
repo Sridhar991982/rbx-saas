@@ -1,0 +1,123 @@
+[
+  { "fields" : { "identifier" : "BG37vXzI0-YHDFMyj9TQhBRrOP9",
+          "name" : "Debian Squeeze",
+          "script_type" : "bash"
+        },
+      "model" : "rbx.system",
+      "pk" : 1
+    },
+  { "fields" : { "name" : "Web server" },
+      "model" : "rbx.softwarecategory",
+      "pk" : 1
+    },
+  { "fields" : { "name" : "Language" },
+      "model" : "rbx.softwarecategory",
+      "pk" : 2
+    },
+  { "fields" : { "name" : "Database" },
+      "model" : "rbx.softwarecategory",
+      "pk" : 3
+    },
+  { "fields" : { "method" : "pacman -S {{ software.name }}",
+          "name" : "Pacman"
+        },
+      "model" : "rbx.softwareinstallation",
+      "pk" : 1
+    },
+  { "fields" : { "method" : "apt-get install {{ software.name }}",
+          "name" : "Apt-get"
+        },
+      "model" : "rbx.softwareinstallation",
+      "pk" : 2
+    },
+  { "fields" : { "method" : "curl {{ software.name }} -o archive.tar.gz\r\ntar
+    xzf archive.tar.gz",
+          "name" : "Curl Tar Gzipped Archive"
+        },
+      "model" : "rbx.softwareinstallation",
+      "pk" : 3
+    },
+  { "fields" : { "category" : 1,
+          "install" : 2,
+          "label" : "Apache",
+          "name" : "apache",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 1
+    },
+  { "fields" : { "category" : 1,
+          "install" : 2,
+          "label" : "NGinx",
+          "name" : "nginx",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 2
+    },
+  { "fields" : { "category" : 3,
+          "install" : 2,
+          "label" : "MySQL",
+          "name" : "MySQL",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 3
+    },
+  { "fields" : { "category" : 3,
+          "install" : 2,
+          "label" : "PostgreSQL",
+          "name" : "postgresql",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 4
+    },
+  { "fields" : { "category" : 2,
+          "install" : 2,
+          "label" : "PHP 5",
+          "name" : "php5",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 5
+    },
+  { "fields" : { "category" : 2,
+          "install" : 2,
+          "label" : "Ruby 1.8",
+          "name" : "ruby-1.8",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 6
+    },
+  { "fields" : { "category" : 2,
+          "install" : 2,
+          "label" : "Python 2.7",
+          "name" : "python2",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 7
+    },
+  { "fields" : { "category" : 2,
+          "install" : 2,
+          "label" : "C/C++ tools chain",
+          "name" : "build-essentials",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 8
+    },
+  { "fields" : { "category" : 2,
+          "install" : 2,
+          "label" : "Latex",
+          "name" : "texlive",
+          "system" : 1
+        },
+      "model" : "rbx.software",
+      "pk" : 9
+    },
+      "pk" : 40
+    }
+]

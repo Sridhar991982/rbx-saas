@@ -51,5 +51,6 @@ urlpatterns = patterns('rbx.views',
     url(r'^new$', 'new_project', name='new_project'),
     url(r'^settings/', include(settings_urls)),
     url(r'^run/(?P<secret>[a-f0-9-]+)/', include(run_urls)),
+    url(r'^api/system/(?P<system_id>\d+)/softwares$', 'system_software', name='system_software'),
     url(r'^(?P<username>\w+)', include(profile_url)),
 )

@@ -16,7 +16,8 @@ from settings import STORAGE, VIEW_RIGHT, EDIT_RIGHT, ADMIN_RIGHT, COMMON_ERROR_
     RESULT_URL, SITE_URL, VM_SRC
 from rbx.forms import RequestInviteForm, NewProjectForm, EditProjectForm, \
     BoxForm, RunForm, ParamForm, ProfileForm, PasswordForm
-from rbx.models import Project, Box, Run, BoxParam, RunParam, UserProfile, ProjectRight
+from rbx.models import Project, Box, Run, BoxParam, RunParam, UserProfile, ProjectRight, \
+    Software, System
 
 
 def home_or_dashboard(request):
@@ -392,3 +393,12 @@ def run_script(request, secret):
                                       'vm_src': VM_SRC,
                                       'run': run},
                   content_type="text/plain")
+
+
+def system_software(request, system_id):
+    try:
+        system = System.objects.get(pk=system_id)
+        return render(request, 'system_software.html',
+                      {'softwares': Software.objects.filter(system=system).order_by('category')})
+    except System.DoesNotExist:
+        return HttpResponse('<p>No software available</p>')

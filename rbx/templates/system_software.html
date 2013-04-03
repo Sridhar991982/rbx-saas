@@ -1,0 +1,15 @@
+<ul class="unstyled">
+{% for software in softwares %}
+    {% ifchanged software.category %}
+    {% if not forloop.first %}
+    </ul>
+    {% if not forloop.last %}
+    </li>
+    {% endif %}
+    {% endif %}
+    <li><a href="#" class="accordion"><i class="icon-caret-right"></i> {{ software.category.name }}</a>
+    <ul class="hide unstyled">
+    {% endifchanged %}
+        <li><label class="checkbox"><input type="checkbox" name="software"> {{ software.label }}</label></li>
+{% endfor %}
+</ul>

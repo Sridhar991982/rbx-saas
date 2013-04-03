@@ -19,6 +19,8 @@ var RBX = (function () {
         _loadParamEdit()
         _submitParamEdit()
         _confirmAction()
+
+        _accordionEvent()
     }
 
     var _tooltips = function () {
@@ -146,6 +148,11 @@ var RBX = (function () {
             $(this).remove()
             _improveSourceTypeSelection()
         })
+
+        $(document).on('change', '#id_system', function () {
+            console.log('CALL')
+            $('#system_software').load('/api/system/'+$('#id_system').val()+'/softwares')
+        })
     }
 
     var _populateReloadLocation = function () {
@@ -230,6 +237,20 @@ var RBX = (function () {
             $('.modal-body').load($(this).attr('href') + ' #fragment',
                                   _improveSourceTypeSelection)
             _modalSubmitEvents($('.modal.in'))
+            return false
+        })
+    }
+
+    var _accordionEvent = function () {
+        $(document).on('click', 'li .accordion', function () {
+            var ul = $(this).next()
+            if (ul.hasClass('hide')) {
+                ul.removeClass('hide')
+                $(this).find('i').removeClass('icon-caret-right').addClass('icon-caret-down')
+            } else {
+                ul.addClass('hide')
+                $(this).find('i').removeClass('icon-caret-down').addClass('icon-caret-right')
+            }
             return false
         })
     }
