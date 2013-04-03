@@ -165,9 +165,14 @@ class BoxForm(forms.ModelForm):
                         + 'Please select a system</div>'),
                 css_class='control-group',
             ),
-            Field('before_run', css_class='input-block-level'),
-            Field('run_command', css_class='input-block-level'),
-            Field('after_run', css_class='input-block-level'),
+            HTML('{% include "box_command.html" with box_form=box_form %}'),
+            Div(
+                Field('before_run', css_class='input-block-level'),
+                Field('run_command', css_class='input-block-level'),
+                Field('after_run', css_class='input-block-level'),
+                id='command-group',
+                css_class='hide',
+            ),
             'allow_runs',
             Div(
                 Div(

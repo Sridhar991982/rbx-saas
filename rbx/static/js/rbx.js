@@ -146,12 +146,33 @@ var RBX = (function () {
         $('.new_box').on('click', function () {
             $(this).parent().find('.box-list').append($('#tpl_box_form').html())
             $(this).remove()
+            $('#id_run_command').val('rbx_auto_config')
             _improveSourceTypeSelection()
         })
 
         $(document).on('change', '#id_system', function () {
-            console.log('CALL')
             $('#system_software').load('/api/system/'+$('#id_system').val()+'/softwares')
+        })
+
+        _runConfig()
+    }
+
+    var _runConfig = function () {
+        $(document).on('click', '#run-config-auto', function () {
+            $('#run-config-perso').removeClass('active')
+            $(this).addClass('active')
+            $('#id_run_command').val('rbx_auto_config')
+            $('#command-group').hide()
+            return false
+        })
+        $(document).on('click', '#run-config-perso', function () {
+            $('#run-config-auto').removeClass('active')
+            $(this).addClass('active')
+            $('#command-group').show()
+            if ($('#id_run_command').val() == 'rbx_auto_config') {
+                $('#id_run_command').val('')
+            }
+            return false
         })
     }
 
