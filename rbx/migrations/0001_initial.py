@@ -88,9 +88,7 @@ class Migration(SchemaMigration):
             ('source_location', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('source_type', self.gf('django.db.models.fields.CharField')(default='git', max_length=20)),
             ('system', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rbx.System'])),
-            ('before_run', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('run_command', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('after_run', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+            ('command', self.gf('django.db.models.fields.TextField')()),
             ('lifetime', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
             ('allow_runs', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
@@ -242,15 +240,13 @@ class Migration(SchemaMigration):
         },
         u'rbx.box': {
             'Meta': {'unique_together': "(('project', 'name'),)", 'object_name': 'Box'},
-            'after_run': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'allow_runs': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'before_run': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'command': ('django.db.models.fields.TextField', [], {}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'lifetime': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
             'name': ('django.db.models.fields.SlugField', [], {'max_length': '30'}),
             'project': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.Project']"}),
-            'run_command': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'source_location': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'source_type': ('django.db.models.fields.CharField', [], {'default': "'git'", 'max_length': '20'}),
             'system': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rbx.System']"})

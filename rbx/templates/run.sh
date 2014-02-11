@@ -1,10 +1,24 @@
 #!/bin/bash
 
-RESULTS="/tmp/results"
+RESULTS="/tmp/$(uuidgen)"
+RUN_DIR="/tmp/$(uuidgen)"
+
 LOG="${RESULTS}/output.log"
 
 curl "{{ site_url }}{% url "start_run" run.secret_key %}"
 mkdir -p $RESULTS
+mkdir -p $RUN_DIR
+
+rbx_auto_config() {
+    if [ "x$(ls | grep -i Makefile)" != "x" ]; then
+        make
+        for exec in $(find . -type f -perm +111 -d 1 -print); do
+            $exec
+        done
+    else
+        echo "Unable to configure projet :("
+    fi
+}
 
 (
     set -x
@@ -12,14 +26,13 @@ mkdir -p $RESULTS
     export {{ param.box_param.name|upper }}="{{ param.value }}"
     {% endfor %}
     {% autoescape off %}
+    cd $RUN_DIR
     {{ run.box.get_sources }}
     cd {{ vm_src }}
-    {{ run.box.before_run }}
-    {{ run.box.run_command }}
+    {{ run.box.command }}
     RET_CODE=$?
-    {{ run.box.after_run }}
     {% endautoescape %}
-    [ $RET_CODE -eq 0 ] && /bin/true || /bin/false
+    [ $RET_CODE -eq 0 ] && true || false
 ) > $LOG 2>&1
 
 RET_CODE=$?

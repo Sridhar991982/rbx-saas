@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+#-*- coding: utf8 -*-
+import os
+import sys
+from json import loads
+from uuid import uuid4
+from time import sleep
+from datetime import timedelta, datetime
+
+sys.path.append(os.path.abspath(os.curdir))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+
+from rbx.models import UserProfile, Box, BoxParam, Run, RunParam
+from settings import STORAGE
+
+USER='alex'
+
+def usage():
+    print('usage: %s (list|run)' % sys.argv[0])
+    exit(1)
+
+def main():
+    if len(sys.argv) < 2:
+        usage()
+    elif sys.argv[1] == 'list':
+        list_project()
+    elif sys.argv[1] == 'run':
+        run_project()
+    else:
+        usage()
+
+def list_project():
+    user = UserProfile.objects.get(user__username=USER)
+    for project in user.projects():
+        print(' %s %s' % (project.public and '+' or '-', project.name))
+
+def run_project():
+    if len(sys.argv) != 3:
+        print('usage: %s run <project_name>' % sys.argv[0])
+        exit(1)
+
+    # Get project
+    project = sys.argv[2]
+    user = UserProfile.objects.get(user__username=USER)
+    if project not in [p.name for p in user.projects()]:
+        print('Cannot found project `%s`' % project)
+        exit(2)
+
+    # Select box
+    boxes = Box.objects.filter(project__name=project)
+    selected_box = 0
+    if len(boxes) > 1:
+        print('>> Box to use')
+        for idx, box in enumerate(boxes, start=1):
+            print('%s. %s' % (idx, box.name))
+        box_idx = raw_input('Choice (default 1): ')
+        try:
+            selected_box = int(box_idx) - 1
+            if selected_box < 0 or selected_box > len(boxes):
+                raise
+        except:
+            selected_box = 0
+    box = boxes[selected_box]
+
+    # Create a new run
+    new_run = Run(box=box,
+                  user=user,
+                  status=1,
+                  secret_key=str(uuid4()))
+    new_run.lifetime = 5
+    new_run.save()
+
+    # Define params
+    params = BoxParam.objects.filter(box=box).order_by('order')
+    print('>> Run parameters (default value)')
+    for param in params:
+        constraints = loads(param.constraints)
+        default = 'initial' in constraints and ' (%s)' % constraints['initial'] or ''
+        user_value = raw_input('%s%s: ' % (param.name.title(), default))
+        if user_value == '':
+            user_value = constraints['initial'] 
+        RunParam(value=user_value,
+                 run=new_run,
+                 box_param=param).save()
+
+    # Run job
+    new_run.start()
+    print('>> Run #%d started...' % new_run.pk)
+    while True:
+        start = datetime.now() + timedelta(seconds=2)
+        run = Run.objects.get(pk=new_run.pk)
+        if not run.is_finished():
+            sleep((start - datetime.now()).total_seconds())
+        else:
+            if run.status == 6:
+                print('Job failed :(')
+            elif run.status == 5:
+                for filename in run.outputs():
+                    with open(os.path.join(STORAGE, filename)) as fd:
+                        print(fd.read())
+            else:
+                print('An error occurred...')
+            exit(0)
+
+if __name__ == '__main__':
+    main()

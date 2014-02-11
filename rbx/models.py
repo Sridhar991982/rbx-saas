@@ -285,9 +285,7 @@ class Box(models.Model):
                                    default=EXECUTOR_SOURCE_TYPE[0][0],
                                    max_length=20)
     system = models.ForeignKey(System)
-    before_run = models.CharField(max_length=255, blank=True)
-    run_command = models.CharField(max_length=255)
-    after_run = models.CharField(max_length=255, blank=True)
+    command = models.TextField(blank=True)
     lifetime = models.PositiveSmallIntegerField()
     allow_runs = models.BooleanField(default=True)
 
@@ -393,13 +391,15 @@ class Run(models.Model):
         # XXX: Check if user is not over quota
         if pdisk:
             pdisk = PDISK_TEMPLATE % pdisk
-        success, vm_id, _ = self.rpc.one.vm.allocate(
-            CLOUD_AUTH,
-            VM_TEMPLATE % {'image': self.box.system.identifier,
-                           'network': network,
-                           'ssh_key': public_key and PUBLIC_KEY or '',
-                           'pdisk': pdisk,
-                           'context': self.context()})
+        # success, vm_id, _ = self.rpc.one.vm.allocate(
+        #     CLOUD_AUTH,
+        #     VM_TEMPLATE % {'image': self.box.system.identifier,
+        #                    'network': network,
+        #                    'ssh_key': public_key and PUBLIC_KEY or '',
+        #                    'pdisk': pdisk,
+        #                    'context': self.context()})
+        success = True
+        vm_id = 0
         if success:
             self.status = 1
             self.vm_id = vm_id
@@ -416,18 +416,21 @@ class Run(models.Model):
 
     def stop(self, reason):
         if self.vm_id:
-            self.rpc.one.vm.action(CLOUD_AUTH, 'finalize', self.vm_id)
+            pass
+            #self.rpc.one.vm.action(CLOUD_AUTH, 'finalize', self.vm_id)
 
     def state(self):
-        info = self._info(self.vm_id)
-        vm_state = int(info.find('STATE').text)
-        if VM_STATES[vm_state] == 'active':
-            state = int(info.find('LCM_STATE').text)
-            return VM_LCM_STATES[state]
-        return VM_STATES[vm_state]
+        # info = self._info(self.vm_id)
+        # vm_state = int(info.find('STATE').text)
+        # if VM_STATES[vm_state] == 'active':
+        #     state = int(info.find('LCM_STATE').text)
+        #     return VM_LCM_STATES[state]
+        # return VM_STATES[vm_state]
+        return 'running'
 
     def ip(self):
-        return self._info(self.vm_id).find('TEMPLATE/NIC').find('IP').text
+        return 'localhost'
+        #return self._info(self.vm_id).find('TEMPLATE/NIC').find('IP').text
 
     def is_finished(self):
         return self.status not in (1, 4)

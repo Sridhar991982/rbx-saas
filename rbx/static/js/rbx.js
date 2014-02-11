@@ -161,7 +161,7 @@ var RBX = (function () {
         $(document).on('click', '#run-config-auto', function () {
             $('#run-config-perso').removeClass('active')
             $(this).addClass('active')
-            $('#id_run_command').val('rbx_auto_config')
+            $('#id_command').val('rbx_auto_config')
             $('#command-group').hide()
             return false
         })
@@ -169,8 +169,8 @@ var RBX = (function () {
             $('#run-config-auto').removeClass('active')
             $(this).addClass('active')
             $('#command-group').show()
-            if ($('#id_run_command').val() == 'rbx_auto_config') {
-                $('#id_run_command').val('')
+            if ($('#id_command').val() == 'rbx_auto_config') {
+                $('#id_command').val('')
             }
             return false
         })

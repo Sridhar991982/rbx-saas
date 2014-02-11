@@ -167,9 +167,7 @@ class BoxForm(forms.ModelForm):
             ),
             HTML('{% include "box_command.html" with box_form=box_form %}'),
             Div(
-                Field('before_run', css_class='input-block-level'),
-                Field('run_command', css_class='input-block-level'),
-                Field('after_run', css_class='input-block-level'),
+                Field('command', css_class='input-block-level'),
                 id='command-group',
                 css_class='hide',
             ),

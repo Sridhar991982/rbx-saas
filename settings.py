@@ -105,7 +105,7 @@ CLOUD_PDISK = 'centos-master.grnet.stratuslab.eu:8445'
 PUBLIC_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPD3/cMQtrfIN9z180vj7wh2chyrgH1qjBn6VrxZ/7s1a7lxRbb8e+ghpisg+wn63qQ8EbQ+6lAqO2sNvfBzTwRik51zvwlAzIGStSJAXex9IM6txpaQQl2MmAn6zRC7mvXgrPfE8Ey3TZkCHUBFjG2bjv9Qaa6udEmZd2bwD0N/X+h3QyeMfdrINRFlHKoCoEn5w0k1VtLzllSL/ovJLfGpyhSmx7W7JHtbOIW0GGLFwpHubb38quboHqtzWyGTFxVCxZSoC+XI/sli1XSsqPIuuFLqgVCtE112ESkNKb39i8AZL7+gh102B34UnSl05PJHJNb0Yv3Xq77FDRu8Ct'
 
 RESULT_URL = 'results/'
-STORAGE = '/srv/rbx-django/rbx/static/'
-VM_SRC = '/tmp/src'
+STORAGE = '/tmp/rbx/static/'
+VM_SRC = 'src'
 
-VM_POLLING = 120  # In seconds
+VM_POLLING = 5  # In seconds
